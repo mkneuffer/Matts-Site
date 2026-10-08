@@ -396,7 +396,7 @@ function init() {
 
     const fill = (base) => holo(new THREE.MeshBasicMaterial({ color: holoColor, side: THREE.DoubleSide }), base);
     const ink = (base) => holo(new THREE.LineBasicMaterial({ color: holoColor }), base);
-    const paleInk = (base) => holo(new THREE.LineBasicMaterial({ color: holoPale }), base);
+    const paleInk = (base) => { const m = holo(new THREE.LineBasicMaterial(), base); m.userData.pale = true; return m; };
     const onGround = (x, z, lift = 0) => new THREE.Vector3(x, terrainY(x, z) + lift, z);
     function outlined(geometry, at, fillBase, lineBase, quat) {
         const mesh = new THREE.Mesh(geometry, fill(fillBase));
@@ -522,8 +522,10 @@ function init() {
         uniforms.uAccent.value.set(v('--accent'));
         uniforms.uInkAlpha.value = parseFloat(v('--scene-ink-alpha')) || 0.5;
         ringMat.color.set(v('--accent'));
+        // Uniforms hold references, but material colors are copies, so set those directly
         holoColor.set(v('--holo'));
-        holoPale.set(v('--holo')).lerp(new THREE.Color(v('--bg')), 0.35);
+        holoPale.set(v('--holo-2'));
+        holoMats.forEach((m) => { if (m.color) m.color.copy(m.userData.pale ? holoPale : holoColor); });
         requestRender();
     }
 

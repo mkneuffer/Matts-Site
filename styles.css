@@ -338,35 +338,14 @@ ol[class] {
     display: none;
 }
 
-.view-switch {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px 24px;
+.scene-label {
     margin-top: 14px;
     padding-right: var(--gutter);
-}
-
-.view-switch button {
-    padding: 4px 0;
-    border: 0;
-    border-bottom: 1px solid transparent;
-    background: none;
-    cursor: pointer;
-    color: var(--muted);
-    font-size: 0.95rem;
-}
-
-.view-switch button:hover {
-    color: var(--text);
-}
-
-.view-switch button[aria-pressed="true"] {
-    color: var(--text);
-    border-bottom-color: var(--accent);
+    font-weight: 500;
 }
 
 .hero-figure figcaption {
-    margin-top: 12px;
+    margin-top: 4px;
     max-width: 40em;
     padding-right: var(--gutter);
     font-size: 0.875rem;
@@ -389,7 +368,7 @@ ol[class] {
     }
 
     .hero-figure figcaption,
-    .view-switch {
+    .scene-label {
         padding-left: var(--gutter);
     }
 }

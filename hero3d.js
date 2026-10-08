@@ -1,6 +1,7 @@
 // Hero scene: an energy lab in mixed reality. The real room is drawn as clay; a planning table at
 // its center projects a hologram that cycles through scenes from the kinds of work I build:
-// a microgrid map, a campus AR tour, a data visualization, and a ring configurator.
+// a microgrid planner, a VR training lab, a campus AR tour, a data globe, a ring configurator,
+// and a projection-mapped stage.
 // On load, a depth-scan wave spreads from the table and the hologram rises once the room is mapped.
 // Point at a surface to place a reticle; click to scan from there.
 
@@ -356,18 +357,18 @@ function init() {
 
     // ───────── Hologram scenes. Each builder returns an optional per-frame update(dt).
     const SCENES = [];
-    function defineScene(id, build) {
+    function defineScene(id, title, build) {
         const group = new THREE.Group();
         group.visible = false;
         spin.add(group);
-        const s = { id, group, mats: [], fade: 0, update: null };
+        const s = { id, title, group, mats: [], fade: 0, update: null };
         layerMats = s.mats;
         s.update = build(group) || null;
         SCENES.push(s);
     }
 
     // Microgrid planner: terrain, solar rows, wind turbine, poles and a line to a battery, loads
-    defineScene('microgrid', (g) => {
+    defineScene('microgrid', 'Microgrid planner', (g) => {
         const terrainY = (x, z) => (1 - 0.35 * (x * x + z * z)) * (0.06 * Math.sin(2.1 * x) * Math.cos(1.7 * z) + 0.03 * Math.sin(4.3 * x + 3.1 * z) + 0.015 * Math.sin(7.7 * z + 5.3 * x));
         discGrid(g, terrainY);
         const onGround = (x, z, lift = 0) => new THREE.Vector3(x, terrainY(x, z) + lift, z);
@@ -421,122 +422,342 @@ function init() {
         return (dt) => { rotor.rotation.z += dt * 0.0024; };
     });
 
-    // Campus AR tour: one building opened up floor by floor, its neighbors, and a pin on a route
-    defineScene('campus', (g) => {
+    // Shared builders for the scenes below
+    const V = (x, y, z) => new THREE.Vector3(x, y, z);
+    function segs(parent, flatPts, base, deep = false) {
+        const geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.Float32BufferAttribute(flatPts, 3));
+        const ls = new THREE.LineSegments(geo, ink(base, deep));
+        parent.add(ls);
+        return ls;
+    }
+    function poly(parent, points, base, deep = false) {
+        const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), ink(base, deep));
+        parent.add(line);
+        return line;
+    }
+    // A projected-light material: stripes and a sweep that move across the surface
+    function patternMat(base) {
+        const mat = holo(new THREE.ShaderMaterial({
+            uniforms: { uColor: { value: holoColor }, uOpacity: { value: 0 }, uTime: { value: 0 } },
+            vertexShader: /* glsl */`
+                varying vec3 vP;
+                void main() {
+                    vP = position;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }`,
+            fragmentShader: /* glsl */`
+                uniform vec3 uColor;
+                uniform float uOpacity;
+                uniform float uTime;
+                varying vec3 vP;
+                void main() {
+                    float stripes = step(0.55, fract(vP.x * 9.0 - uTime * 0.6 + sin(vP.y * 7.0 + uTime) * 0.4));
+                    float sweep = exp(-pow((vP.y - fract(uTime * 0.35) * 0.8) * 9.0, 2.0));
+                    gl_FragColor = vec4(uColor, uOpacity * (0.12 + 0.5 * stripes + 0.6 * sweep));
+                    #include <colorspace_fragment>
+                }`,
+            side: THREE.DoubleSide
+        }), base);
+        timeUniforms.push(mat);
+        return mat;
+    }
+    const sinPulse = (t, speed = 0.004) => 0.5 + 0.5 * Math.sin(t * speed);
+    // Points an object's +z at a point in its parent's space (lookAt works in world space)
+    const aimM = new THREE.Matrix4();
+    const aim = (obj, x, y, z) => obj.quaternion.setFromRotationMatrix(aimM.lookAt(V(x, y, z), obj.position, UP));
+
+    // VR training lab: a trainer wall with a breaker panel, conduit and outlets, a workbench, and a
+    // headset whose gaze ray finds the breaker the trainee has to operate
+    defineScene('training', 'VR training lab', (g) => {
         discGrid(g, flat, 14);
-        const floorGeo = new THREE.BoxGeometry(0.62, 0.035, 0.4);
-        const partitions = [[-0.31, 0, 0.31, 0], [0, -0.2, 0, 0.2], [-0.1, 0, -0.1, -0.2], [0.15, 0, 0.15, 0.2]];
-        for (let f = 0; f < 4; f++) {
-            const current = f === 2;
-            const plate = outlined(g, floorGeo, new THREE.Vector3(-0.2, 0.06 + f * 0.17, -0.1), current ? 0.4 : 0.14, current ? 1 : 0.7);
-            const walls = [];
-            partitions.forEach(([ax, az, bx, bz]) => walls.push(ax, 0.02, az, bx, 0.02, bz, ax, 0.075, az, bx, 0.075, bz));
-            const wg = new THREE.BufferGeometry();
-            wg.setAttribute('position', new THREE.Float32BufferAttribute(walls, 3));
-            plate.add(new THREE.LineSegments(wg, ink(0.45)));
-        }
-        const columns = [];
-        [[-0.5, -0.29], [0.1, -0.29], [-0.5, 0.09], [0.1, 0.09]].forEach(([x, z]) => columns.push(x, 0, z, x, 0.6, z));
-        const colGeo = new THREE.BufferGeometry();
-        colGeo.setAttribute('position', new THREE.Float32BufferAttribute(columns, 3));
-        g.add(new THREE.LineSegments(colGeo, ink(0.35)));
-
-        [[0.45, -0.45, 0.24, 0.18, 0.2], [0.58, 0.12, 0.2, 0.3, 0.32], [-0.55, 0.55, 0.26, 0.2, 0.14], [0.12, 0.62, 0.22, 0.16, 0.22]].forEach(([x, z, w, d, h]) => {
-            outlined(g, new THREE.BoxGeometry(w, h, d).translate(0, h / 2, 0), new THREE.Vector3(x, 0, z), 0.1, 0.65);
-        });
-
-        const route = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(-0.85, 0.01, 0.3), new THREE.Vector3(-0.3, 0.01, 0.32), new THREE.Vector3(0.0, 0.01, 0.36),
-            new THREE.Vector3(0.32, 0.01, 0.3), new THREE.Vector3(0.36, 0.01, -0.1), new THREE.Vector3(0.28, 0.01, -0.72)
-        ]);
-        g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(route.getPoints(80)), ink(0.9, true)));
-        const pin = new THREE.Group();
-        g.add(pin);
-        outlined(pin, new THREE.ConeGeometry(0.035, 0.1, 12).rotateX(Math.PI).translate(0, 0.1, 0), new THREE.Vector3(), 0.6, 0.9);
-        outlined(pin, new THREE.SphereGeometry(0.035, 12, 8).translate(0, 0.17, 0), new THREE.Vector3(), 0.6, 0);
-        pin.add(new THREE.Mesh(new THREE.RingGeometry(0.05, 0.065, 32).rotateX(-Math.PI / 2), fill(0.7)));
-        let u = 0;
-        return (dt) => {
-            u = (u + dt * 0.00009) % 1;
-            pin.position.copy(route.getPointAt(u));
-        };
-    });
-
-    // Data visualization: a 3D bar chart on a grid, with one series traced across the top
-    defineScene('data', (g) => {
-        discGrid(g, flat, 14);
-        const value = (i, j) => 0.12 + 0.55 * (0.5 + 0.5 * Math.sin(i * 0.9 + 0.6) * Math.cos(j * 0.7 - 0.3)) * (0.6 + 0.08 * i);
-        const bars = [];
-        const step = 0.2;
-        for (let i = 0; i < 6; i++) {
-            for (let j = 0; j < 4; j++) {
-                const h = value(i, j);
-                const series = j === 1;
-                const bar = outlined(g, new THREE.BoxGeometry(0.11, 1, 0.11).translate(0, 0.5, 0),
-                    new THREE.Vector3(-0.5 + i * step, 0, -0.3 + j * step), series ? 0.38 : 0.16, series ? 1 : 0.7);
-                bar.scale.y = h;
-                bars.push({ bar, h, i, j });
+        outlined(g, new THREE.BoxGeometry(1.1, 0.66, 0.04), V(0, 0.36, -0.42), 0.08, 0.6);
+        outlined(g, new THREE.BoxGeometry(0.38, 0.48, 0.06), V(-0.22, 0.38, -0.37), 0.14, 0.9);
+        segs(g, [-0.41, 0.6, -0.335, -0.03, 0.6, -0.335, -0.22, 0.6, -0.335, -0.22, 0.16, -0.335], 0.3);
+        let target = null;
+        for (let row = 0; row < 5; row++) {
+            for (let col = 0; col < 2; col++) {
+                const at = V(-0.3 + col * 0.16, 0.24 + row * 0.08, -0.33);
+                const isTarget = row === 3 && col === 1;
+                const b = outlined(g, new THREE.BoxGeometry(0.11, 0.05, 0.03), at, isTarget ? 0.55 : 0.18, isTarget ? 1 : 0.6);
+                if (isTarget) target = b;
             }
         }
-        const axes = new THREE.BufferGeometry().setFromPoints([
-            new THREE.Vector3(-0.62, 0, 0.42), new THREE.Vector3(0.62, 0, 0.42),
-            new THREE.Vector3(-0.62, 0, 0.42), new THREE.Vector3(-0.62, 0, -0.42),
-            new THREE.Vector3(-0.62, 0, -0.42), new THREE.Vector3(-0.62, 0.8, -0.42)
-        ]);
-        g.add(new THREE.LineSegments(axes, ink(0.8, true)));
-        const gridlines = [];
-        for (let k = 1; k <= 3; k++) gridlines.push(-0.62, k * 0.2, -0.42, 0.62, k * 0.2, -0.42);
-        const glGeo = new THREE.BufferGeometry();
-        glGeo.setAttribute('position', new THREE.Float32BufferAttribute(gridlines, 3));
-        g.add(new THREE.LineSegments(glGeo, ink(0.25)));
-
-        const series = bars.filter((b) => b.j === 1);
-        const traceGeo = new THREE.BufferGeometry().setFromPoints(series.map((b) => new THREE.Vector3(-0.5 + b.i * step, b.h + 0.04, -0.3 + step)));
-        g.add(new THREE.Line(traceGeo, ink(1, true)));
+        // Conduit from the panel up and across the wall, down to two outlets
+        poly(g, [V(-0.22, 0.62, -0.38), V(-0.22, 0.66, -0.38), V(0.3, 0.66, -0.38), V(0.3, 0.52, -0.38)], 0.7, true);
+        outlined(g, new THREE.BoxGeometry(0.08, 0.11, 0.035), V(0.3, 0.46, -0.38), 0.18, 0.8);
+        outlined(g, new THREE.BoxGeometry(0.08, 0.11, 0.035), V(0.3, 0.3, -0.38), 0.18, 0.8);
+        poly(g, [V(0.3, 0.405, -0.38), V(0.3, 0.355, -0.38)], 0.7, true);
+        // Workbench with a meter on it
+        outlined(g, new THREE.BoxGeometry(0.86, 0.03, 0.26), V(0, 0.27, -0.05), 0.16, 0.85);
+        segs(g, [-0.4, 0, -0.15, -0.4, 0.255, -0.15, 0.4, 0, -0.15, 0.4, 0.255, -0.15, -0.4, 0, 0.05, -0.4, 0.255, 0.05, 0.4, 0, 0.05, 0.4, 0.255, 0.05], 0.55);
+        outlined(g, new THREE.BoxGeometry(0.09, 0.03, 0.13), V(0.22, 0.3, -0.05), 0.3, 0.9);
+        // Headset: visor, front cameras, strap, floating at standing eye height
+        const headset = new THREE.Group();
+        headset.position.set(0.42, 0.62, 0.42);
+        aim(headset, target.position.x, target.position.y, target.position.z);
+        g.add(headset);
+        const visor = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.1, 0.09), fill(0.3));
+        visor.add(new THREE.LineSegments(new THREE.EdgesGeometry(visor.geometry), ink(1, true)));
+        headset.add(visor);
+        [-0.05, 0, 0.05].forEach((x) => {
+            const c = new THREE.Mesh(new THREE.CircleGeometry(0.012, 12), fill(0.8));
+            c.position.set(x, 0, 0.046);
+            headset.add(c);
+        });
+        const strap = new THREE.Mesh(new THREE.TorusGeometry(0.1, 0.008, 6, 32, Math.PI), fill(0.4));
+        strap.rotation.set(Math.PI / 2, 0, 0);
+        strap.position.z = -0.04;
+        headset.add(strap);
+        const gaze = poly(g, [headset.position.clone(), target.position.clone().add(V(0, 0, 0.02))], 0.8, true);
+        const targetMat = target.material;
         let t = 0;
         return (dt) => {
-            t += dt * 0.001;
-            const pos = traceGeo.attributes.position;
-            bars.forEach((b) => {
-                b.bar.scale.y = b.h * (0.92 + 0.08 * Math.sin(t * 1.4 + b.i * 0.8 + b.j));
-                if (b.j === 1) pos.setY(b.i, b.bar.scale.y + 0.04);
-            });
-            pos.needsUpdate = true;
+            t += dt;
+            targetMat.userData.base = 0.25 + 0.45 * sinPulse(t);
+            headset.position.y = 0.62 + 0.015 * Math.sin(t * 0.002);
+            gaze.geometry.attributes.position.setY(0, headset.position.y);
+            gaze.geometry.attributes.position.needsUpdate = true;
         };
     });
 
-    // Ring configurator: a ring on a display plinth, turning, with a set stone
-    defineScene('ring', (g) => {
-        discGrid(g, flat, 12);
-        outlined(g, new THREE.CylinderGeometry(0.34, 0.38, 0.08, 48).translate(0, 0.04, 0), new THREE.Vector3(), 0.12, 0.6);
-        const ring = new THREE.Group();
-        ring.position.y = 0.5;
-        g.add(ring);
-        const band = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.045, 14, 64), fill(0.22));
-        band.add(new THREE.LineSegments(new THREE.WireframeGeometry(new THREE.TorusGeometry(0.3, 0.045, 6, 48)), ink(0.3)));
-        ring.add(band);
-        const setting = new THREE.Group();
-        setting.position.y = 0.33;
-        ring.add(setting);
-        const prongs = [];
-        for (let k = 0; k < 4; k++) {
-            const a = (k / 4) * Math.PI * 2 + Math.PI / 4;
-            prongs.push(Math.cos(a) * 0.04, 0, Math.sin(a) * 0.04, Math.cos(a) * 0.1, 0.1, Math.sin(a) * 0.1);
-        }
-        const prongGeo = new THREE.BufferGeometry();
-        prongGeo.setAttribute('position', new THREE.Float32BufferAttribute(prongs, 3));
-        setting.add(new THREE.LineSegments(prongGeo, ink(0.9, true)));
-        const stone = new THREE.Group();
-        stone.position.y = 0.1;
-        setting.add(stone);
-        const crown = new THREE.CylinderGeometry(0.07, 0.11, 0.05, 8).translate(0, 0.025, 0);
-        const pavilion = new THREE.ConeGeometry(0.11, 0.11, 8).rotateX(Math.PI).translate(0, -0.055, 0);
-        [crown, pavilion].forEach((geo) => {
-            const m = new THREE.Mesh(geo, fill(0.35));
-            m.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo, 1), ink(1, true)));
-            stone.add(m);
+    // Campus AR tour: an architectural model on an image target, viewed through a phone
+    defineScene('campus', 'Campus AR tour', (g) => {
+        discGrid(g, flat, 14);
+        // Image target with corner brackets
+        const T = 0.62, k = 0.1, y = 0.004;
+        const corners = [];
+        [[-1, -1], [1, -1], [1, 1], [-1, 1]].forEach(([sx, sz]) => {
+            const cx = sx * T, cz = sz * T;
+            corners.push(cx, y, cz, cx - sx * k, y, cz, cx, y, cz, cx, y, cz - sz * k);
         });
-        return (dt) => { ring.rotation.y += dt * 0.0006; };
+        segs(g, corners, 1, true);
+        // Hall with a pitched roof, windows, and a clock tower
+        const hall = new THREE.Group();
+        hall.position.set(-0.12, 0, -0.08);
+        g.add(hall);
+        outlined(hall, new THREE.BoxGeometry(0.56, 0.2, 0.3).translate(0, 0.1, 0), V(0, 0, 0), 0.16, 0.9);
+        const roofShape = new THREE.Shape();
+        roofShape.moveTo(-0.3, 0);
+        roofShape.lineTo(0.3, 0);
+        roofShape.lineTo(0, 0.12);
+        roofShape.closePath();
+        const roof = new THREE.ExtrudeGeometry(roofShape, { depth: 0.32, bevelEnabled: false }).translate(0, 0, -0.16);
+        outlined(hall, roof, V(0, 0.2, 0), 0.22, 0.9);
+        const windows = [];
+        for (let i = 0; i < 6; i++) {
+            const x = -0.23 + i * 0.092;
+            [0.05, 0.12].forEach((wy) => windows.push(x - 0.022, wy, 0.151, x + 0.022, wy, 0.151, x - 0.022, wy + 0.045, 0.151, x + 0.022, wy + 0.045, 0.151, x - 0.022, wy, 0.151, x - 0.022, wy + 0.045, 0.151, x + 0.022, wy, 0.151, x + 0.022, wy + 0.045, 0.151));
+        }
+        segs(hall, windows, 0.45);
+        outlined(hall, new THREE.BoxGeometry(0.1, 0.42, 0.1).translate(0, 0.21, 0), V(0, 0, 0.2), 0.2, 0.9);
+        outlined(hall, new THREE.ConeGeometry(0.085, 0.12, 4).rotateY(Math.PI / 4).translate(0, 0.48, 0), V(0, 0, 0.2), 0.3, 0.9);
+        const clock = new THREE.Mesh(new THREE.RingGeometry(0.02, 0.028, 20), fill(0.8));
+        clock.position.set(0, 0.34, 0.251);
+        hall.add(clock);
+        // Modern block with floor lines
+        const block = outlined(g, new THREE.BoxGeometry(0.22, 0.34, 0.2).translate(0, 0.17, 0), V(0.38, 0, -0.3), 0.12, 0.85);
+        const floors = [];
+        for (let f = 1; f < 5; f++) {
+            const fy = f * 0.068;
+            floors.push(-0.11, fy, 0.101, 0.11, fy, 0.101, 0.111, fy, -0.1, 0.111, fy, 0.1);
+        }
+        segs(block, floors, 0.45);
+        // Trees and a curved walk
+        [[-0.5, 0.35], [-0.32, 0.45], [0.05, 0.48], [0.45, 0.2], [0.52, 0.42], [-0.55, -0.4]].forEach(([x, z]) => {
+            segs(g, [x, 0, z, x, 0.07, z], 0.6);
+            outlined(g, new THREE.IcosahedronGeometry(0.055, 0), V(x, 0.11, z), 0.16, 0.7);
+        });
+        poly(g, new THREE.CatmullRomCurve3([V(-0.62, 0.006, 0.22), V(-0.2, 0.006, 0.28), V(0.15, 0.006, 0.3), V(0.3, 0.006, 0.05), V(0.38, 0.006, -0.12)]).getPoints(48), 0.9, true);
+        // Phone looking down at the model, with its camera frustum
+        const phone = new THREE.Group();
+        phone.position.set(0.42, 0.72, 0.48);
+        aim(phone, -0.1, 0.1, -0.1);
+        g.add(phone);
+        const body = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.3, 0.012), fill(0.12));
+        body.add(new THREE.LineSegments(new THREE.EdgesGeometry(body.geometry), ink(1, true)));
+        phone.add(body);
+        segs(phone, [-0.07, 0.13, -0.007, 0.07, 0.13, -0.007, 0.07, 0.13, -0.007, 0.07, -0.13, -0.007, 0.07, -0.13, -0.007, -0.07, -0.13, -0.007, -0.07, -0.13, -0.007, -0.07, 0.13, -0.007], 0.5);
+        phone.updateMatrix();
+        const lens = new THREE.Vector3(0, 0.1, 0.01).applyMatrix4(phone.matrix);
+        const frustum = [];
+        [[-T, -T], [T, -T], [T, T], [-T, T]].forEach(([x, z]) => frustum.push(lens.x, lens.y, lens.z, x * 0.75, 0.004, z * 0.75));
+        segs(g, frustum, 0.25);
+        let t = 0;
+        return (dt) => {
+            t += dt;
+            phone.position.y = 0.72 + 0.012 * Math.sin(t * 0.0018);
+        };
+    });
+
+    // Data globe: spikes rising from locations, and arcs with packets traveling between them
+    defineScene('data', 'Data visualization', (g) => {
+        const R = 0.38, C = V(0, 0.5, 0);
+        // Stand and orbit ring
+        outlined(g, new THREE.CylinderGeometry(0.16, 0.22, 0.05, 32).translate(0, 0.025, 0), V(0, 0, 0), 0.16, 0.7);
+        segs(g, [0, 0.05, 0, 0, 0.12, 0], 0.7);
+        const orbit = new THREE.Mesh(new THREE.TorusGeometry(R + 0.09, 0.004, 4, 96), fill(0.6));
+        orbit.position.copy(C);
+        orbit.rotation.set(Math.PI / 2 - 0.35, 0.3, 0);
+        g.add(orbit);
+        const globe = new THREE.Group();
+        globe.position.copy(C);
+        g.add(globe);
+        globe.add(new THREE.Mesh(new THREE.SphereGeometry(R, 32, 16), fill(0.05)));
+        // Latitude and longitude lines
+        const grat = [];
+        for (let lat = -60; lat <= 60; lat += 30) {
+            const phi = (lat * Math.PI) / 180, r = R * Math.cos(phi), yy = R * Math.sin(phi);
+            for (let k = 0; k < 64; k++) {
+                const a = (k / 64) * Math.PI * 2, b = ((k + 1) / 64) * Math.PI * 2;
+                grat.push(Math.cos(a) * r, yy, Math.sin(a) * r, Math.cos(b) * r, yy, Math.sin(b) * r);
+            }
+        }
+        for (let lon = 0; lon < 180; lon += 30) {
+            const th = (lon * Math.PI) / 180;
+            for (let k = 0; k < 64; k++) {
+                const a = (k / 64) * Math.PI * 2, b = ((k + 1) / 64) * Math.PI * 2;
+                grat.push(Math.cos(a) * R * Math.cos(th), Math.sin(a) * R, Math.cos(a) * R * Math.sin(th), Math.cos(b) * R * Math.cos(th), Math.sin(b) * R, Math.cos(b) * R * Math.sin(th));
+            }
+        }
+        segs(globe, grat, 0.35);
+        const onSphere = (lat, lon, r = R) => {
+            const p = (lat * Math.PI) / 180, l = (lon * Math.PI) / 180;
+            return V(r * Math.cos(p) * Math.cos(l), r * Math.sin(p), r * Math.cos(p) * Math.sin(l));
+        };
+        const sites = [[42, -71, 0.2], [51, 0, 0.14], [37, -122, 0.17], [35, 139, 0.12], [-33, 151, 0.08], [1, 103, 0.1], [19, 72, 0.13], [-23, -46, 0.09], [52, 13, 0.11], [25, 55, 0.07]];
+        sites.forEach(([lat, lon, h]) => {
+            const base = onSphere(lat, lon);
+            const tip = onSphere(lat, lon, R + h);
+            segs(globe, [base.x, base.y, base.z, tip.x, tip.y, tip.z], 1, true);
+            const cap = new THREE.Mesh(new THREE.SphereGeometry(0.012, 8, 6), fill(0.9));
+            cap.position.copy(tip);
+            globe.add(cap);
+        });
+        // Arcs lifted off the surface, each with a packet moving along it
+        const arcs = [[0, 1], [0, 2], [1, 8], [3, 5], [6, 9], [0, 7], [4, 3]].map(([a, b]) => {
+            const pa = onSphere(sites[a][0], sites[a][1]).normalize(), pb = onSphere(sites[b][0], sites[b][1]).normalize();
+            const pts = [];
+            for (let k = 0; k <= 40; k++) {
+                const u = k / 40;
+                const dir = pa.clone().lerp(pb, u).normalize();
+                pts.push(dir.multiplyScalar(R + 0.18 * Math.sin(Math.PI * u) * pa.distanceTo(pb) * 0.7));
+            }
+            poly(globe, pts, 0.7);
+            const packet = new THREE.Mesh(new THREE.SphereGeometry(0.014, 8, 6), fill(1));
+            globe.add(packet);
+            return { pts, packet, u: Math.random() };
+        });
+        return (dt) => {
+            globe.rotation.y += dt * 0.0002;
+            arcs.forEach((a) => {
+                a.u = (a.u + dt * 0.00035) % 1;
+                const f = a.u * (a.pts.length - 1), i = Math.floor(f);
+                a.packet.position.copy(a.pts[i]).lerp(a.pts[Math.min(i + 1, a.pts.length - 1)], f - i);
+            });
+        };
+    });
+
+    // Ring configurator: a solitaire with cathedral shoulders, six prongs and a faceted round
+    // brilliant, with metal swatches orbiting it
+    defineScene('ring', 'Ring configurator', (g) => {
+        discGrid(g, flat, 12);
+        outlined(g, new THREE.CylinderGeometry(0.26, 0.3, 0.06, 48).translate(0, 0.03, 0), V(0, 0, 0), 0.14, 0.7);
+        outlined(g, new THREE.CylinderGeometry(0.2, 0.26, 0.03, 48).translate(0, 0.075, 0), V(0, 0, 0), 0.1, 0.5);
+        const ring = new THREE.Group();
+        ring.position.y = 0.42;
+        g.add(ring);
+        // Shank: a slightly flattened torus
+        const shank = new THREE.Mesh(new THREE.TorusGeometry(0.24, 0.03, 12, 96), fill(0.25));
+        shank.scale.z = 1.5;
+        shank.add(new THREE.LineSegments(new THREE.WireframeGeometry(new THREE.TorusGeometry(0.24, 0.03, 4, 48)), ink(0.25)));
+        ring.add(shank);
+        // Cathedral shoulders rising into the basket
+        const topY = 0.27;
+        [-1, 1].forEach((s) => {
+            poly(ring, new THREE.QuadraticBezierCurve3(V(s * 0.16, 0.18, 0), V(s * 0.1, 0.27, 0), V(s * 0.05, 0.31, 0)).getPoints(16), 0.9, true);
+            poly(ring, new THREE.QuadraticBezierCurve3(V(s * 0.18, 0.15, 0.03), V(s * 0.1, 0.25, 0.04), V(s * 0.05, 0.3, 0.03)).getPoints(16), 0.5);
+        });
+        // Round brilliant: table, crown, girdle, pavilion, culet, as a lathe
+        const gr = 0.085;
+        const profile = [V(0, -0.085, 0), V(gr, 0, 0), V(gr, 0.008, 0), V(gr * 0.56, 0.042, 0), V(0, 0.042, 0)].map((p) => new THREE.Vector2(p.x, p.y));
+        const stoneGeo = new THREE.LatheGeometry(profile, 16);
+        const stone = new THREE.Mesh(stoneGeo, fill(0.32));
+        stone.add(new THREE.LineSegments(new THREE.EdgesGeometry(stoneGeo, 1), ink(1, true)));
+        stone.position.y = topY + 0.1;
+        ring.add(stone);
+        // Basket and six prongs curving over the girdle
+        const basket = new THREE.Mesh(new THREE.TorusGeometry(0.05, 0.006, 4, 24), fill(0.6));
+        basket.rotation.x = Math.PI / 2;
+        basket.position.y = topY + 0.04;
+        ring.add(basket);
+        for (let k = 0; k < 6; k++) {
+            const a = (k / 6) * Math.PI * 2;
+            const c = Math.cos(a), s = Math.sin(a);
+            poly(ring, new THREE.QuadraticBezierCurve3(V(c * 0.05, topY + 0.04, s * 0.05), V(c * 0.1, topY + 0.08, s * 0.1), V(c * 0.075, topY + 0.125, s * 0.075)).getPoints(10), 1, true);
+        }
+        // Metal swatches orbiting: the configurator's choices
+        const swatches = new THREE.Group();
+        swatches.position.y = 0.3;
+        g.add(swatches);
+        [0, 1, 2].forEach((i) => {
+            const a = (i / 3) * Math.PI * 2;
+            const sw = outlined(swatches, new THREE.SphereGeometry(0.045, 16, 10), V(Math.cos(a) * 0.62, 0, Math.sin(a) * 0.62), i === 0 ? 0.55 : 0.18, i === 0 ? 1 : 0.5);
+            if (i === 0) {
+                const sel = new THREE.Mesh(new THREE.RingGeometry(0.065, 0.072, 32), fill(0.9));
+                sel.rotation.x = -Math.PI / 2;
+                sel.position.y = -0.05;
+                sw.add(sel);
+            }
+        });
+        return (dt) => {
+            ring.rotation.y += dt * 0.0005;
+            swatches.rotation.y -= dt * 0.00018;
+        };
+    });
+
+    // Projection mapping: a faceted stage set lit by a projector, with a moving projected pattern
+    defineScene('projection', 'Projection mapping', (g) => {
+        discGrid(g, flat, 14);
+        outlined(g, new THREE.BoxGeometry(1.0, 0.05, 0.5).translate(0, 0.025, 0), V(0, 0, -0.15), 0.14, 0.85);
+        // Faceted backdrop: angled panels share one projected pattern
+        const pattern = patternMat(0.9);
+        const facets = [
+            { w: 0.26, h: 0.5, x: -0.36, z: -0.3, ry: 0.45, rx: 0 },
+            { w: 0.26, h: 0.62, x: -0.12, z: -0.36, ry: 0.12, rx: -0.08 },
+            { w: 0.26, h: 0.62, x: 0.14, z: -0.36, ry: -0.12, rx: -0.08 },
+            { w: 0.26, h: 0.5, x: 0.38, z: -0.3, ry: -0.45, rx: 0 },
+            { w: 0.22, h: 0.22, x: 0.0, z: -0.12, ry: 0, rx: -0.6 }
+        ];
+        const backdrop = [];
+        facets.forEach((f) => {
+            const geo = new THREE.PlaneGeometry(f.w, f.h).translate(0, f.h / 2, 0);
+            const m = new THREE.Mesh(geo, pattern);
+            m.position.set(f.x, 0.05, f.z);
+            m.rotation.set(f.rx, f.ry, 0);
+            m.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo), ink(0.9)));
+            g.add(m);
+            backdrop.push(m);
+        });
+        // Speakers either side
+        [-0.58, 0.58].forEach((x) => outlined(g, new THREE.BoxGeometry(0.1, 0.2, 0.09).translate(0, 0.1, 0), V(x, 0, -0.12), 0.18, 0.8));
+        // Overhead truss
+        const truss = [];
+        [-0.52, 0.52].forEach((x) => truss.push(x, 0.05, 0.08, x, 0.82, 0.08));
+        truss.push(-0.52, 0.82, 0.08, 0.52, 0.82, 0.08, -0.52, 0.78, 0.08, 0.52, 0.78, 0.08);
+        for (let k = 0; k < 10; k++) {
+            const x0 = -0.52 + (k * 1.04) / 10, x1 = x0 + 1.04 / 10;
+            truss.push(x0, 0.78, 0.08, x1, 0.82, 0.08);
+        }
+        segs(g, truss, 0.55);
+        // Projector and its frustum onto the backdrop
+        const projector = outlined(g, new THREE.BoxGeometry(0.14, 0.07, 0.12), V(0, 0.5, 0.62), 0.25, 1);
+        aim(projector, 0, 0.3, -0.3);
+        const lens = V(0, 0.5, 0.56);
+        const frustum = [];
+        [V(-0.48, 0.05, -0.24), V(0.48, 0.05, -0.24), V(-0.24, 0.72, -0.38), V(0.24, 0.72, -0.38)].forEach((p) => frustum.push(lens.x, lens.y, lens.z, p.x, p.y, p.z));
+        segs(g, frustum, 0.3, true);
+        return null;
     });
 
     layerMats = null;
@@ -569,25 +790,19 @@ function init() {
         requestRender();
     }
 
-    // ───────── Scene cycling. Buttons under the figure track the cycle; choosing one stops it.
-    const sceneButtons = Array.from(figure.querySelectorAll('[data-scene]'));
+    // ───────── Scene cycling: a new scene every few seconds, named in a label under the figure
+    const sceneLabel = figure.querySelector('[data-scene-label]');
     const HOLD_MS = 7000;
     let active = 0;
-    let autoCycle = true;
     let heldFor = 0;
     let holoIn = 0;
 
-    function showScene(index, { chosen = false } = {}) {
+    function showScene(index) {
         active = (index + SCENES.length) % SCENES.length;
         heldFor = 0;
-        if (chosen) autoCycle = false;
-        sceneButtons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.scene === SCENES[active].id)));
+        if (sceneLabel) sceneLabel.textContent = SCENES[active].title;
         requestRender();
     }
-
-    sceneButtons.forEach((b) => b.addEventListener('click', () => {
-        showScene(SCENES.findIndex((s) => s.id === b.dataset.scene), { chosen: true });
-    }));
 
     function setOpacity(m, o) {
         const v = m.userData.base * o;
@@ -730,7 +945,7 @@ function init() {
         holoIn = approach(holoIn, rt >= 0.6 ? 1 : 0, 320);
 
         // Cycle scenes while the hologram is up
-        if (holoIn > 0.5 && autoCycle && !instant) {
+        if (holoIn > 0.5 && !instant) {
             heldFor += dt;
             if (heldFor > HOLD_MS) showScene(active + 1);
             animating = true;

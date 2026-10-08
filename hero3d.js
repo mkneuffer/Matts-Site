@@ -182,7 +182,7 @@ function init() {
                 if (dot(c, c) > 0.25) discard;
                 float r = revealed(vWorld);
                 float hover = 1.0 - smoothstep(0.15, 0.6, distance(vWorld, uHover));
-                float a = r * (0.03 + uScan * 0.6) + scanGlow(vWorld) + hover * 0.85 * r;
+                float a = r * (0.03 * (1.0 - uVR) + uScan * 0.6) + scanGlow(vWorld) + hover * 0.85 * r;
                 if (a < 0.01) discard;
                 gl_FragColor = vec4(uAccent, min(a, 1.0));
                 #include <colorspace_fragment>
@@ -540,7 +540,7 @@ function init() {
         renderer.setSize(rect.width, rect.height, false);
         camera.aspect = rect.width / rect.height;
         // Keep the whole room in frame on narrow figures
-        orbit.radius = 12.4 * Math.max(1, 1.4 / camera.aspect);
+        orbit.radius = 13 * Math.max(1, 1.4 / camera.aspect);
         camera.updateProjectionMatrix();
         uniforms.uPixelRatio.value = renderer.getPixelRatio();
         requestRender();

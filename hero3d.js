@@ -274,6 +274,8 @@ function init() {
     // A grid cut to the disc, each line subdivided so it can follow a height function, plus a rim.
     // A ring of light ripples outward across it.
     const timeUniforms = [];
+    const rippleMats = [];
+    let rippleStart = 0;
     function discGrid(parent, heightAt, cells = 16) {
         const pts = [];
         const sub = 3, n = cells * sub;
@@ -314,7 +316,7 @@ function init() {
                 }`
         }), 1);
         parent.add(new THREE.LineSegments(geo, mat));
-        timeUniforms.push(mat);
+        rippleMats.push(mat);
     }
     const flat = () => 0;
 
@@ -352,7 +354,9 @@ function init() {
     tickGeo.setAttribute('position', new THREE.Float32BufferAttribute(ticks, 3));
     map.add(new THREE.LineSegments(tickGeo, ink(0.5)));
 
+    // Scenes are composed facing +z; turn them to face the camera's resting direction
     const spin = new THREE.Group();
+    spin.rotation.y = 0.72;
     map.add(spin);
 
     // ───────── Hologram scenes. Each builder returns an optional per-frame update(dt).
@@ -892,7 +896,10 @@ function init() {
         setPointer(e);
         placeCamera();
         updateHit();
-        if (hit) startWave(hit.point);
+        // Every click sends a fresh pulse: a scan wave from the surface hit (or the table) and a
+        // new ripple across the hologram grid
+        startWave(hit ? hit.point : TABLE);
+        rippleStart = performance.now();
         if (e.pointerType === 'touch') setTimeout(() => { pointerN = null; requestRender(); }, 1400);
         requestRender();
     });
@@ -953,10 +960,10 @@ function init() {
         SCENES.forEach((s, i) => { s.fade = approach(s.fade, i === active ? 1 : 0, 220); });
         applyHologram();
 
-        // Live motion in the visible scenes, and a slow turn of the whole map
+        // Live motion in the visible scenes
         if (map.visible && !instant) {
-            spin.rotation.y += dt * 0.00008;
             timeUniforms.forEach((m) => { m.uniforms.uTime.value = now / 1000; });
+            rippleMats.forEach((m) => { m.uniforms.uTime.value = (now - rippleStart) / 1000; });
             SCENES.forEach((s) => { if (s.group.visible && s.update) s.update(dt); });
             animating = true;
         }

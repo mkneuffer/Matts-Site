@@ -621,10 +621,16 @@ function init() {
             : requestAnimationFrame(frame);
     }
 
+    let lastFrame = null;
+
     function frame(now) {
         rafId = 0;
         let animating = false;
         const instant = reduceMotion.matches;
+        // Time-based easing, so transitions take the same time at any frame rate
+        const dt = lastFrame === null ? 16 : Math.min(1000, now - lastFrame);
+        lastFrame = now;
+        const ease = (tau) => (instant ? 1 : 1 - Math.exp(-dt / tau));
 
         // First reveal from the headset, then settle into mixed reality
         if (revealStart === null) revealStart = instant ? now - REVEAL_MS : now;
@@ -638,7 +644,7 @@ function init() {
 
         // Ease view parameters toward the chosen view
         const goal = VIEWS[view];
-        const kv = instant ? 1 : 0.07;
+        const kv = ease(260);
         Object.keys(goal).forEach((key) => {
             state[key] += (goal[key] - state[key]) * kv;
             if (Math.abs(goal[key] - state[key]) > 0.002) animating = true;
@@ -661,7 +667,7 @@ function init() {
         // Ease the orbit toward the pointer
         const goalAz = orbit.az + (pointerN ? (pointerN.x - 0.5) * 0.16 : 0);
         const goalEl = orbit.el + (pointerN ? (pointerN.y - 0.5) * 0.06 : 0);
-        const k = instant ? 1 : 0.08;
+        const k = ease(200);
         look.az += (goalAz - look.az) * k;
         look.el += (goalEl - look.el) * k;
         if (Math.abs(goalAz - look.az) + Math.abs(goalEl - look.el) > 0.0005) animating = true;
@@ -671,6 +677,7 @@ function init() {
         renderer.render(scene, camera);
 
         if (animating && visible) requestRender();
+        else lastFrame = null;
     }
 
     new IntersectionObserver(([entry]) => {

@@ -442,8 +442,12 @@ function init() {
     let rafId = 0;
     let visible = true;
 
+    // Background tabs get no animation frames; a timer lets a started reveal still finish
     function requestRender() {
-        if (!rafId) rafId = requestAnimationFrame(frame);
+        if (rafId) return;
+        rafId = document.hidden
+            ? setTimeout(() => frame(performance.now()), 50)
+            : requestAnimationFrame(frame);
     }
 
     function frame(now) {

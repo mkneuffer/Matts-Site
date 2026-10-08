@@ -1,10 +1,10 @@
-// Hero scene: one electrical training lab shown three ways a headset can present it.
+// Hero scene: an energy lab with a holographic microgrid map floating over a planning table,
+// shown three ways a headset can present it:
 //   scan  - the room mesh a headset builds: edges and a point cloud
-//   mr    - mixed reality: the real room as clay, with virtual training content anchored in it
+//   mr    - mixed reality: the real room as clay, with the virtual map anchored in it
 //   vr    - virtual reality: the same lab fully rendered
-// On load, a depth-scan wave spreads from the trainee's headset, then the view settles into
-// mixed reality. Point at a surface to place a reticle; click to scan from there.
-// Renders on demand, so it costs nothing while idle.
+// On load, a depth-scan wave spreads from the table, then the view settles into mixed reality.
+// Point at a surface to place a reticle; click to scan from there.
 
 import * as THREE from 'three';
 import { MeshSurfaceSampler } from 'three/addons/math/MeshSurfaceSampler.js';
@@ -42,9 +42,9 @@ function init() {
     const camera = new THREE.PerspectiveCamera(28, 1, 0.1, 100);
     const target = new THREE.Vector3(-0.2, 1.1, -0.3);
 
-    // Where the trainee stands, and where their headset is. The scan starts from the headset.
-    const TRAINEE = new THREE.Vector3(0.3, 0, 0.5);
-    const HEADSET = new THREE.Vector3(TRAINEE.x, 1.6, TRAINEE.z - 0.08);
+    // The planning table. The scan starts from its top, and the hologram floats above it.
+    const TABLE = new THREE.Vector3(0.35, 0.86, -0.1);
+    const TABLE_R = 0.9;
 
     // ───────── Shared uniforms
     const uniforms = {
@@ -56,7 +56,7 @@ function init() {
         uInkAlpha: { value: 0.5 },
         uScan: { value: 1 },
         uVR: { value: 0 },
-        uRevealOrigin: { value: HEADSET.clone() },
+        uRevealOrigin: { value: TABLE.clone() },
         uRevealRadius: { value: 0 },
         uWaveOrigin: { value: new THREE.Vector3() },
         uWaveRadius: { value: -10 },
@@ -196,8 +196,7 @@ function init() {
     const PAINT = {
         floor: '#59616b', wall: '#d6d8d2', steel: '#3b4048', top: '#b4875a', board: '#e7e4dc',
         breaker: '#2b2f35', panel: '#a7acb2', danger: '#c8412f', caution: '#d9a520', conduit: '#9aa0a6',
-        cabinet: '#e2e4e6', status: '#2fbf6a', tray: '#7c838b', seat: '#2a2e33', skin: '#c9a184',
-        shirt: '#4a6fa5', pants: '#30353d', headset: '#f2f2f0'
+        cabinet: '#e2e4e6', status: '#2fbf6a', tray: '#7c838b'
     };
     const surfaceMats = new Map();
     function surfaceMat(tone, paint) {
@@ -245,14 +244,10 @@ function init() {
     box(6, 3, 0.08, [0, 1.5, -2.54], PAINT.wall, { tone: 0.86 });
     box(0.08, 3, 5, [-3.04, 1.5, 0], PAINT.wall, { tone: 0.86 });
 
-    // Workbench with a trainer board
-    box(2.2, 0.06, 0.9, [0.15, 0.9, -0.3], PAINT.top);
-    [[-0.88, -0.68], [1.18, -0.68], [-0.88, 0.08], [1.18, 0.08]].forEach(([x, z]) => box(0.06, 0.87, 0.06, [x, 0.435, z], PAINT.steel));
-    box(2.1, 0.04, 0.8, [0.15, 0.25, -0.3], PAINT.steel);
-    box(1.1, 0.7, 0.05, [0.05, 1.28, -0.66], PAINT.board);
-    [-0.32, -0.14, 0.04, 0.22].forEach((x) => box(0.12, 0.2, 0.08, [x, 1.36, -0.6], PAINT.breaker));
-    box(0.42, 0.14, 0.08, [0.05, 1.08, -0.6], PAINT.breaker);
-    box(0.3, 0.08, 0.22, [0.85, 0.97, -0.2], PAINT.caution);
+    // Round planning table on a pedestal
+    cyl(TABLE_R, 0.06, [TABLE.x, TABLE.y - 0.03, TABLE.z], PAINT.steel, 48);
+    cyl(0.22, TABLE.y - 0.06, [TABLE.x, (TABLE.y - 0.06) / 2, TABLE.z], PAINT.steel, 24);
+    cyl(0.45, 0.04, [TABLE.x, 0.02, TABLE.z], PAINT.steel, 32);
 
     // Back wall: distribution panel, sub-panel, disconnect, junction box
     box(0.75, 1.05, 0.2, [-1.75, 1.45, -2.4], PAINT.panel);
@@ -275,35 +270,6 @@ function init() {
     });
     box(0.3, 0.08, 3.6, [-2.82, 2.45, -0.4], PAINT.tray);
 
-    // Stool, pushed aside
-    cyl(0.19, 0.05, [1.45, 0.66, 0.95], PAINT.seat);
-    cyl(0.025, 0.6, [1.45, 0.33, 0.95], PAINT.conduit, 8);
-    cyl(0.24, 0.03, [1.45, 0.015, 0.95], PAINT.seat);
-
-    // Trainee: a simple scale figure wearing a headset, right hand reaching toward the board
-    const trainee = new THREE.Group();
-    trainee.position.copy(TRAINEE);
-    room.add(trainee);
-    const person = { parent: trainee };
-    const limb = (r, from, dir, len, paint) => {
-        const d = new THREE.Vector3(...dir).normalize();
-        const a = new THREE.Vector3(...from);
-        const mid = a.clone().addScaledVector(d, len / 2);
-        solid(new THREE.CapsuleGeometry(r, len - 2 * r, 4, 16), {
-            at: mid.toArray(), paint, quat: new THREE.Quaternion().setFromUnitVectors(UP, d), ...person
-        });
-        return a.clone().addScaledVector(d, len);
-    };
-    limb(0.065, [-0.09, 0.05, 0], [0, 1, 0], 0.82, PAINT.pants);
-    limb(0.065, [0.09, 0.05, 0], [0, 1, 0], 0.82, PAINT.pants);
-    solid(new THREE.CapsuleGeometry(0.15, 0.36, 4, 16), { at: [0, 1.13, 0], paint: PAINT.shirt, scale: [1, 1, 0.68], ...person });
-    solid(new THREE.SphereGeometry(0.1, 20, 14), { at: [0, 1.57, 0.01], paint: PAINT.skin, ...person });
-    solid(new THREE.BoxGeometry(0.21, 0.1, 0.11), { at: [0, 1.6, -0.08], paint: PAINT.headset, ...person });
-    const leftHand = limb(0.045, [-0.21, 1.36, 0], [-0.08, -1, 0.02], 0.58, PAINT.shirt);
-    const rightHand = limb(0.045, [0.21, 1.36, 0], [0.15, -0.35, -1], 0.6, PAINT.shirt);
-    solid(new THREE.BoxGeometry(0.05, 0.05, 0.11), { at: leftHand.toArray(), paint: PAINT.breaker, ...person });
-    solid(new THREE.BoxGeometry(0.05, 0.05, 0.11), { at: rightHand.toArray(), paint: PAINT.breaker, ...person });
-
     // Floor and wall guides: 0.5 m tiles, wall seams
     const guides = [];
     for (let x = -3; x <= 3.001; x += 0.5) guides.push(x, 0.002, -2.5, x, 0.002, 2.5);
@@ -314,8 +280,8 @@ function init() {
     guideGeo.setAttribute('position', new THREE.Float32BufferAttribute(guides, 3));
     room.add(new THREE.LineSegments(guideGeo, guideMat));
 
-    // Play-area boundary around the trainee
-    const bx0 = -1.0, bx1 = 1.9, bz0 = -1.05, bz1 = 1.7, by = 0.006;
+    // Play-area boundary around the table
+    const bx0 = -1.15, bx1 = 1.85, bz0 = -1.35, bz1 = 1.4, by = 0.006;
     const bGeo = new THREE.BufferGeometry();
     bGeo.setAttribute('position', new THREE.Float32BufferAttribute([
         bx0, by, bz0, bx1, by, bz0, bx1, by, bz0, bx1, by, bz1,
@@ -366,101 +332,175 @@ function init() {
         m.position.set(x, 0.004, z);
         scene.add(m);
     }
-    shadow(2.9, 1.5, 0.15, -0.3);
+    shadow(2.2, 2.2, TABLE.x, TABLE.z);
     shadow(1.1, 3.3, -2.5, -0.85);
-    shadow(0.6, 0.6, 1.45, 0.95);
-    shadow(0.7, 0.55, TRAINEE.x, TRAINEE.z);
 
-    // ───────── Virtual training layer, anchored in the room. Shown in mixed reality and VR.
-    const virtual = new THREE.Group();
-    scene.add(virtual);
-    const virtualMats = [];
-    const vMat = (mat, base = 1) => { mat.userData.base = base; mat.transparent = true; mat.opacity = 0; virtualMats.push(mat); return mat; };
+    // ───────── Holographic microgrid map over the table. Shown in mixed reality and VR.
+    // A terrain disc with a grid, solar rows, a wind turbine, poles carrying a line to a battery,
+    // and a few building blocks, all in unit-disc coordinates scaled to the table.
+    const holoMats = [];
+    const holo = (mat, base) => { mat.userData.base = base; Object.assign(mat, { transparent: true, depthWrite: false, opacity: 0 }); holoMats.push(mat); return mat; };
+    const holoColor = new THREE.Color();
+    const holoPale = new THREE.Color();
 
-    const BREAKER = new THREE.Vector3(-0.14, 1.36, -0.55);
+    const MAP_R = 0.72;
+    const map = new THREE.Group();
+    map.position.set(TABLE.x, TABLE.y + 0.1, TABLE.z);
+    map.scale.setScalar(MAP_R);
+    scene.add(map);
+    const spin = new THREE.Group();
+    map.add(spin);
 
-    // Step card
-    const cardCanvas = document.createElement('canvas');
-    cardCanvas.width = 1024;
-    cardCanvas.height = 600;
-    const cardTex = new THREE.CanvasTexture(cardCanvas);
-    cardTex.colorSpace = THREE.SRGBColorSpace;
-    cardTex.anisotropy = 4;
-    const card = new THREE.Mesh(new THREE.PlaneGeometry(1.55, 1.55 * 600 / 1024), vMat(new THREE.MeshBasicMaterial({ map: cardTex, side: THREE.DoubleSide, depthWrite: false })));
-    card.position.set(1.65, 2.05, -0.75);
-    card.rotation.y = 0.62;
-    card.renderOrder = 5;
-    virtual.add(card);
+    const terrainY = (x, z) => (1 - 0.35 * (x * x + z * z)) * (0.06 * Math.sin(2.1 * x) * Math.cos(1.7 * z) + 0.03 * Math.sin(4.3 * x + 3.1 * z) + 0.015 * Math.sin(7.7 * z + 5.3 * x));
 
-    function roundRect(g, x, y, w, h, r) {
-        g.beginPath();
-        g.moveTo(x + r, y);
-        g.arcTo(x + w, y, x + w, y + h, r);
-        g.arcTo(x + w, y + h, x, y + h, r);
-        g.arcTo(x, y + h, x, y, r);
-        g.arcTo(x, y, x + w, y, r);
-        g.closePath();
-    }
-
-    function drawCard(c) {
-        const g = cardCanvas.getContext('2d');
-        const W = cardCanvas.width, H = cardCanvas.height;
-        const font = (size, weight) => `${weight} ${size}px 'Schibsted Grotesk', system-ui, sans-serif`;
-        g.clearRect(0, 0, W, H);
-        roundRect(g, 6, 6, W - 12, H - 12, 28);
-        g.globalAlpha = 0.94;
-        g.fillStyle = c.bg;
-        g.fill();
-        g.globalAlpha = 1;
-        g.lineWidth = 5;
-        g.strokeStyle = c.accent;
-        g.stroke();
-
-        g.fillStyle = c.muted;
-        g.font = font(34, 500);
-        g.fillText('Step 3 of 7', 56, 88);
-        g.fillStyle = c.text;
-        g.font = font(64, 600);
-        g.fillText('Lockout/tagout', 56, 168);
-        g.font = font(38, 400);
-        g.fillStyle = c.muted;
-        ['Switch off breaker 2, apply your lock,', 'then verify zero energy before', 'opening the panel.'].forEach((line, i) => g.fillText(line, 56, 248 + i * 52));
-
-        const x0 = 56, y0 = 470, segW = (W - 112 - 6 * 12) / 7;
-        for (let i = 0; i < 7; i++) {
-            g.fillStyle = i < 3 ? c.accent : c.line;
-            g.fillRect(x0 + i * (segW + 12), y0, segW, 10);
+    // Terrain grid cut to the disc, each line subdivided so it follows the surface, plus a rim
+    const grid = [];
+    const CELLS = 16, SUB = 3, N = CELLS * SUB;
+    const inDisc = (x, z) => x * x + z * z <= 1.0001;
+    const pushSeg = (ax, az, bx, bz) => grid.push(ax, terrainY(ax, az), az, bx, terrainY(bx, bz), bz);
+    for (let i = 0; i <= CELLS; i++) {
+        const c = -1 + (2 * i) / CELLS;
+        for (let k = 0; k < N; k++) {
+            const a = -1 + (2 * k) / N, b = a + 2 / N;
+            if (inDisc(a, c) && inDisc(b, c)) pushSeg(a, c, b, c);
+            if (inDisc(c, a) && inDisc(c, b)) pushSeg(c, a, c, b);
         }
-        g.fillStyle = c.accent;
-        g.font = font(34, 600);
-        g.fillText('Hold trigger to confirm', 56, 548);
-        cardTex.needsUpdate = true;
+    }
+    for (let k = 0; k < 96; k++) {
+        const a = (k / 96) * Math.PI * 2, b = ((k + 1) / 96) * Math.PI * 2;
+        pushSeg(Math.cos(a), Math.sin(a), Math.cos(b), Math.sin(b));
+    }
+    const terrainMat = holo(new THREE.ShaderMaterial({
+        uniforms: { uColor: { value: holoColor }, uOpacity: { value: 0 }, uTime: { value: 0 } },
+        vertexShader: /* glsl */`
+            varying float vR;
+            void main() {
+                vR = length(position.xz);
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }`,
+        fragmentShader: /* glsl */`
+            uniform vec3 uColor;
+            uniform float uOpacity;
+            uniform float uTime;
+            varying float vR;
+            void main() {
+                float edge = 1.0 - smoothstep(0.6, 1.0, vR) * 0.6;
+                float ripple = exp(-pow((vR - mod(uTime * 0.25, 1.2)) * 8.0, 2.0));
+                gl_FragColor = vec4(uColor, uOpacity * (0.55 * edge + ripple * 0.6));
+                #include <colorspace_fragment>
+            }`
+    }), 1);
+    const terrainGeo = new THREE.BufferGeometry();
+    terrainGeo.setAttribute('position', new THREE.Float32BufferAttribute(grid, 3));
+    spin.add(new THREE.LineSegments(terrainGeo, terrainMat));
+
+    const fill = (base) => holo(new THREE.MeshBasicMaterial({ color: holoColor, side: THREE.DoubleSide }), base);
+    const ink = (base) => holo(new THREE.LineBasicMaterial({ color: holoColor }), base);
+    const paleInk = (base) => holo(new THREE.LineBasicMaterial({ color: holoPale }), base);
+    const onGround = (x, z, lift = 0) => new THREE.Vector3(x, terrainY(x, z) + lift, z);
+    function outlined(geometry, at, fillBase, lineBase, quat) {
+        const mesh = new THREE.Mesh(geometry, fill(fillBase));
+        mesh.position.copy(at);
+        if (quat) mesh.quaternion.copy(quat);
+        mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(geometry), ink(lineBase)));
+        spin.add(mesh);
+        return mesh;
     }
 
-    // Leader from the card to the breaker, a target frame, and the arc-flash boundary
-    const accentVirtual = vMat(new THREE.LineBasicMaterial());
-    const cardCorner = new THREE.Vector3(-0.775, -0.454, 0).applyEuler(card.rotation).add(card.position);
-    virtual.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([cardCorner, BREAKER.clone().add(new THREE.Vector3(0.05, 0.1, 0.05))]), accentVirtual));
-
-    const frameBox = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(0.2, 0.28, 0.14)), accentVirtual);
-    frameBox.position.copy(BREAKER).add(new THREE.Vector3(0, 0, -0.04));
-    virtual.add(frameBox);
-
-    const dashed = vMat(new THREE.LineDashedMaterial({ dashSize: 0.09, gapSize: 0.06 }));
-    const arcPts = [];
-    for (let i = 0; i <= 48; i++) {
-        const a = (i / 48) * Math.PI;
-        arcPts.push(new THREE.Vector3(-1.75 + Math.cos(a) * 1.15, 0.012, -2.3 + Math.sin(a) * 1.15));
+    // Solar rows, tilted toward the sun
+    const panelTilt = new THREE.Quaternion().setFromEuler(new THREE.Euler(-(Math.PI / 2 - 0.45), 0, 0));
+    const panelGeo = new THREE.PlaneGeometry(0.15, 0.085);
+    for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 5; c++) {
+            const x = -0.78 + c * 0.17, z = 0.08 + r * 0.13;
+            outlined(panelGeo, onGround(x, z, 0.05), 0.28, 0.85, panelTilt);
+        }
     }
-    const arc = new THREE.Line(new THREE.BufferGeometry().setFromPoints(arcPts), dashed);
-    arc.computeLineDistances();
-    virtual.add(arc);
 
-    const zoneMat = vMat(new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, depthWrite: false }), 0.1);
-    const zone = new THREE.Mesh(new THREE.CircleGeometry(1.15, 48, 0, Math.PI), zoneMat);
-    zone.rotation.x = Math.PI / 2;
-    zone.position.set(-1.75, 0.008, -2.3);
-    virtual.add(zone);
+    // Wind turbine with a turning rotor
+    const TURBINE = onGround(0.48, -0.22);
+    outlined(new THREE.CylinderGeometry(0.014, 0.026, 0.78, 8, 1, true).translate(0, 0.39, 0), TURBINE, 0.3, 0.5);
+    const hub = new THREE.Group();
+    hub.position.copy(TURBINE).add(new THREE.Vector3(0, 0.78, 0));
+    spin.add(hub);
+    hub.add(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(0.055, 0.045, 0.12)), paleInk(0.9)));
+    const rotor = new THREE.Group();
+    rotor.position.z = 0.075;
+    hub.add(rotor);
+    const blades = [];
+    for (let k = 0; k < 3; k++) {
+        const a = (k * Math.PI * 2) / 3, ca = Math.cos(a), sa = Math.sin(a);
+        const q = (x, y) => [x * ca - y * sa, x * sa + y * ca, 0];
+        blades.push(...q(-0.022, 0.03), ...q(0.022, 0.03), ...q(0.006, 0.34), ...q(-0.022, 0.03), ...q(0.006, 0.34), ...q(-0.006, 0.34));
+    }
+    const bladeGeo = new THREE.BufferGeometry();
+    bladeGeo.setAttribute('position', new THREE.Float32BufferAttribute(blades, 3));
+    rotor.add(new THREE.Mesh(bladeGeo, fill(0.7)));
+
+    // Two poles carry a sagging line to a battery
+    const POLE_H = 0.3;
+    const poleTops = [[0.2, -0.46], [-0.2, -0.5]].map(([x, z]) => {
+        const base = onGround(x, z);
+        outlined(new THREE.CylinderGeometry(0.008, 0.013, POLE_H, 6, 1, true).translate(0, POLE_H / 2, 0), base, 0.25, 0.6);
+        const top = base.clone().add(new THREE.Vector3(0, POLE_H, 0));
+        outlined(new THREE.BoxGeometry(0.12, 0.012, 0.012), top, 0.3, 0.7);
+        return top;
+    });
+    const BATTERY = onGround(-0.62, -0.2);
+    outlined(new THREE.BoxGeometry(0.22, 0.13, 0.15).translate(0, 0.065, 0), BATTERY, 0.22, 0.95);
+    const linePts = [];
+    const sag = (a, b) => { for (let k = 0; k <= 20; k++) { const u = k / 20; linePts.push(a.clone().lerp(b, u).add(new THREE.Vector3(0, -0.07 * 4 * u * (1 - u), 0))); } };
+    sag(TURBINE.clone().add(new THREE.Vector3(0, 0.3, 0)), poleTops[0]);
+    sag(poleTops[0], poleTops[1]);
+    sag(poleTops[1], BATTERY.clone().add(new THREE.Vector3(0, 0.13, 0)));
+    spin.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(linePts), ink(1)));
+
+    // A few building blocks: the loads the microgrid serves
+    [[0.32, 0.42, 0.16], [0.5, 0.28, 0.1], [0.18, 0.62, 0.12], [0.55, 0.52, 0.2]].forEach(([x, z, h]) => {
+        outlined(new THREE.BoxGeometry(0.11, h, 0.11).translate(0, h / 2, 0), onGround(x, z), 0.12, 0.75);
+    });
+
+    // Standing parts: projector glow, volume, and rim ring
+    const volumeMat = holo(new THREE.ShaderMaterial({
+        uniforms: { uColor: { value: holoColor }, uOpacity: { value: 0 } },
+        vertexShader: /* glsl */`
+            varying float vY;
+            void main() {
+                vY = position.y;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }`,
+        fragmentShader: /* glsl */`
+            uniform vec3 uColor;
+            uniform float uOpacity;
+            varying float vY;
+            void main() {
+                gl_FragColor = vec4(uColor, uOpacity * pow(1.0 - clamp(vY / 1.1, 0.0, 1.0), 1.8) * 0.16);
+                #include <colorspace_fragment>
+            }`,
+        side: THREE.DoubleSide
+    }), 1);
+    map.add(new THREE.Mesh(new THREE.CylinderGeometry(1.03, 1.03, 1.1, 64, 1, true).translate(0, 0.5, 0), volumeMat));
+    const rim = new THREE.Mesh(new THREE.RingGeometry(1.06, 1.1, 128).rotateX(-Math.PI / 2), fill(0.55));
+    rim.position.y = -0.08;
+    map.add(rim);
+    const rimTicks = [];
+    for (let k = 0; k < 12; k++) {
+        const a = (k / 12) * Math.PI * 2;
+        rimTicks.push(Math.cos(a) * 1.02, -0.08, Math.sin(a) * 1.02, Math.cos(a) * 1.02, 0.06, Math.sin(a) * 1.02);
+    }
+    const tickGeo = new THREE.BufferGeometry();
+    tickGeo.setAttribute('position', new THREE.Float32BufferAttribute(rimTicks, 3));
+    map.add(new THREE.LineSegments(tickGeo, ink(0.5)));
+    map.traverse((o) => { o.renderOrder = 5; });
+
+    function setHoloOpacity(t) {
+        holoMats.forEach((m) => {
+            const o = m.userData.base * t;
+            if (m.isShaderMaterial) m.uniforms.uOpacity.value = o;
+            else m.opacity = o;
+        });
+        map.visible = t > 0.003;
+    }
 
     // ───────── Surface reticle
     const reticle = new THREE.Group();
@@ -482,10 +522,8 @@ function init() {
         uniforms.uAccent.value.set(v('--accent'));
         uniforms.uInkAlpha.value = parseFloat(v('--scene-ink-alpha')) || 0.5;
         ringMat.color.set(v('--accent'));
-        accentVirtual.color.set(v('--accent'));
-        dashed.color.set(v('--accent'));
-        zoneMat.color.set(v('--accent'));
-        drawCard({ bg: v('--bg'), text: v('--text'), muted: v('--muted'), line: v('--line'), accent: v('--accent') });
+        holoColor.set(v('--holo'));
+        holoPale.set(v('--holo')).lerp(new THREE.Color(v('--bg')), 0.35);
         requestRender();
     }
 
@@ -505,7 +543,7 @@ function init() {
         view = name;
         if (chosen) viewChosen = true;
         viewButtons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === name)));
-        if (revealDone) startWave(HEADSET);
+        if (revealDone) startWave(TABLE);
         requestRender();
     }
 
@@ -514,7 +552,7 @@ function init() {
     function applyState() {
         uniforms.uScan.value = state.scan;
         uniforms.uVR.value = state.vr;
-        virtualMats.forEach((m) => { m.opacity = m.userData.base * state.virtual; });
+        setHoloOpacity(state.virtual);
         shadowMat.opacity = state.shadow * Math.min(1, uniforms.uRevealRadius.value / 6);
     }
 
@@ -651,6 +689,14 @@ function init() {
             else state[key] = goal[key];
         });
         applyState();
+
+        // The map turns slowly and the rotor spins whenever the hologram is showing
+        if (map.visible && !instant) {
+            spin.rotation.y += dt * 0.00012;
+            rotor.rotation.z += dt * 0.0024;
+            terrainMat.uniforms.uTime.value = now / 1000;
+            animating = true;
+        }
 
         if (waveStart !== null) {
             const wt = (now - waveStart) / WAVE_MS;

@@ -15,6 +15,7 @@
     --scene-light: #f8f9fa;
     --scene-ink: #1d232b;
     --scene-ink-alpha: 0.55;
+    --holo: #2b44e0;
 
     --sans: 'Schibsted Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
@@ -39,6 +40,7 @@
     --scene-light: #3b424c;
     --scene-ink: #d6dce4;
     --scene-ink-alpha: 0.32;
+    --holo: #8aa2ff;
     color-scheme: dark;
 }
 

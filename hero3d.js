@@ -40,11 +40,11 @@ function init() {
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(28, 1, 0.1, 100);
-    const target = new THREE.Vector3(-0.2, 1.1, -0.3);
+    const target = new THREE.Vector3(-0.1, 1.0, -0.25);
 
     // The planning table. The scan starts from its top, and the hologram floats above it.
-    const TABLE = new THREE.Vector3(0.35, 0.86, -0.1);
-    const TABLE_R = 0.9;
+    const TABLE = new THREE.Vector3(0.3, 0.82, -0.05);
+    const TABLE_R = 1.25;
 
     // ───────── Shared uniforms
     const uniforms = {
@@ -246,8 +246,8 @@ function init() {
 
     // Round planning table on a pedestal
     cyl(TABLE_R, 0.06, [TABLE.x, TABLE.y - 0.03, TABLE.z], PAINT.steel, 48);
-    cyl(0.22, TABLE.y - 0.06, [TABLE.x, (TABLE.y - 0.06) / 2, TABLE.z], PAINT.steel, 24);
-    cyl(0.45, 0.04, [TABLE.x, 0.02, TABLE.z], PAINT.steel, 32);
+    cyl(0.3, TABLE.y - 0.06, [TABLE.x, (TABLE.y - 0.06) / 2, TABLE.z], PAINT.steel, 24);
+    cyl(0.6, 0.04, [TABLE.x, 0.02, TABLE.z], PAINT.steel, 32);
 
     // Back wall: distribution panel, sub-panel, disconnect, junction box
     box(0.75, 1.05, 0.2, [-1.75, 1.45, -2.4], PAINT.panel);
@@ -281,7 +281,7 @@ function init() {
     room.add(new THREE.LineSegments(guideGeo, guideMat));
 
     // Play-area boundary around the table
-    const bx0 = -1.15, bx1 = 1.85, bz0 = -1.35, bz1 = 1.4, by = 0.006;
+    const bx0 = -1.4, bx1 = 2.0, bz0 = -1.6, bz1 = 1.6, by = 0.006;
     const bGeo = new THREE.BufferGeometry();
     bGeo.setAttribute('position', new THREE.Float32BufferAttribute([
         bx0, by, bz0, bx1, by, bz0, bx1, by, bz0, bx1, by, bz1,
@@ -332,7 +332,7 @@ function init() {
         m.position.set(x, 0.004, z);
         scene.add(m);
     }
-    shadow(2.2, 2.2, TABLE.x, TABLE.z);
+    shadow(3.0, 3.0, TABLE.x, TABLE.z);
     shadow(1.1, 3.3, -2.5, -0.85);
 
     // ───────── Holographic microgrid map over the table. Shown in mixed reality and VR.
@@ -343,9 +343,9 @@ function init() {
     const holoColor = new THREE.Color();
     const holoPale = new THREE.Color();
 
-    const MAP_R = 0.72;
+    const MAP_R = 1.08;
     const map = new THREE.Group();
-    map.position.set(TABLE.x, TABLE.y + 0.1, TABLE.z);
+    map.position.set(TABLE.x, TABLE.y + 0.12, TABLE.z);
     map.scale.setScalar(MAP_R);
     scene.add(map);
     const spin = new THREE.Group();
@@ -578,7 +578,7 @@ function init() {
         renderer.setSize(rect.width, rect.height, false);
         camera.aspect = rect.width / rect.height;
         // Keep the whole room in frame on narrow figures
-        orbit.radius = 13 * Math.max(1, 1.4 / camera.aspect);
+        orbit.radius = 12.2 * Math.max(1, 1.4 / camera.aspect);
         camera.updateProjectionMatrix();
         uniforms.uPixelRatio.value = renderer.getPixelRatio();
         requestRender();

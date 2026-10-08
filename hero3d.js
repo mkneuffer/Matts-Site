@@ -602,7 +602,7 @@ function init() {
         segs(g, [0, 0.05, 0, 0, 0.12, 0], 0.7);
         const orbit = new THREE.Mesh(new THREE.TorusGeometry(R + 0.09, 0.004, 4, 96), fill(0.6));
         orbit.position.copy(C);
-        orbit.rotation.set(Math.PI / 2 - 0.35, 0.3, 0);
+        orbit.rotation.set(Math.PI / 2 - 0.22, 0, 0.18);
         g.add(orbit);
         const globe = new THREE.Group();
         globe.position.copy(C);

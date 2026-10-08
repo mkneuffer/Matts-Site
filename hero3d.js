@@ -36,7 +36,7 @@ function init() {
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(28, 1, 0.1, 100);
-    const target = new THREE.Vector3(-0.35, 0.95, -0.35);
+    const target = new THREE.Vector3(-0.2, 1.1, -0.3);
 
     // ───────── Shared uniforms
     const uniforms = {
@@ -76,8 +76,8 @@ function init() {
         }
     `;
 
-    const surfaceMat = new THREE.ShaderMaterial({
-        uniforms,
+    const makeSurface = (tone) => new THREE.ShaderMaterial({
+        uniforms: { ...uniforms, uTone: { value: tone } },
         vertexShader: /* glsl */`
             varying vec3 vWorld;
             varying vec3 vNormal;
@@ -91,6 +91,7 @@ function init() {
             uniform vec3 uSurfaceA;
             uniform vec3 uSurfaceB;
             uniform vec3 uAccent;
+            uniform float uTone;
             varying vec3 vNormal;
             ${common}
             void main() {
@@ -98,8 +99,11 @@ function init() {
                 if (r < 0.02) discard;
                 vec3 n = normalize(vNormal);
                 float light = 0.5 + 0.5 * max(dot(n, normalize(vec3(0.5, 0.9, 0.7))), 0.0);
-                float ao = smoothstep(0.0, 0.6, vWorld.y) * 0.15 + 0.85;
-                vec3 col = mix(uSurfaceA, uSurfaceB, light) * ao;
+                // Darken toward the room's inside corners: the middle of the three plane distances
+                vec3 c = vec3(vWorld.y, vWorld.x + 3.0, vWorld.z + 2.5);
+                float mid = c.x + c.y + c.z - max(c.x, max(c.y, c.z)) - min(c.x, min(c.y, c.z));
+                float ao = mix(0.74, 1.0, smoothstep(0.0, 1.2, mid));
+                vec3 col = mix(uSurfaceA, uSurfaceB, light * uTone) * ao;
                 col = mix(col, uAccent, scanGlow(vWorld) * 0.35);
                 gl_FragColor = vec4(col, 1.0);
                 #include <colorspace_fragment>
@@ -108,6 +112,7 @@ function init() {
         polygonOffsetFactor: 1,
         polygonOffsetUnits: 1
     });
+    const TONES = { floor: makeSurface(0.72), shell: makeSurface(0.86), object: makeSurface(1.0) };
 
     const lineFragment = (colorExpr, alphaExpr) => /* glsl */`
         uniform vec3 uInk;
@@ -175,7 +180,7 @@ function init() {
                 if (dot(c, c) > 0.25) discard;
                 float r = revealed(vWorld);
                 float hover = 1.0 - smoothstep(0.15, 0.6, distance(vWorld, uHover));
-                float a = r * 0.2 + scanGlow(vWorld) + hover * 0.85 * r;
+                float a = r * 0.03 + scanGlow(vWorld) + hover * 0.85 * r;
                 if (a < 0.01) discard;
                 gl_FragColor = vec4(uAccent, min(a, 1.0));
                 #include <colorspace_fragment>
@@ -189,10 +194,9 @@ function init() {
     const room = new THREE.Group();
     scene.add(room);
 
-    function addSolid(geometry, x, y, z, ry = 0) {
-        const mesh = new THREE.Mesh(geometry, surfaceMat);
+    function addSolid(geometry, x, y, z, tone = 'object') {
+        const mesh = new THREE.Mesh(geometry, TONES[tone]);
         mesh.position.set(x, y, z);
-        mesh.rotation.y = ry;
         room.add(mesh);
         const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geometry, 25), edgeMat);
         edges.position.copy(mesh.position);
@@ -202,7 +206,7 @@ function init() {
         return mesh;
     }
 
-    const box = (w, h, d, x, y, z) => addSolid(new THREE.BoxGeometry(w, h, d), x, y, z);
+    const box = (w, h, d, x, y, z, tone) => addSolid(new THREE.BoxGeometry(w, h, d), x, y, z, tone);
     const cyl = (r, h, x, y, z, seg = 20) => addSolid(new THREE.CylinderGeometry(r, r, h, seg), x, y, z);
     function rod(r, from, to) {
         const a = new THREE.Vector3(...from), b = new THREE.Vector3(...to);
@@ -218,9 +222,9 @@ function init() {
     }
 
     // Shell: floor and two walls, thin so they read as a cutaway
-    box(6, 0.08, 5, 0, -0.04, 0);
-    box(6, 3, 0.08, 0, 1.5, -2.54);
-    box(0.08, 3, 5, -3.04, 1.5, 0);
+    box(6, 0.08, 5, 0, -0.04, 0, 'floor');
+    box(6, 3, 0.08, 0, 1.5, -2.54, 'shell');
+    box(0.08, 3, 5, -3.04, 1.5, 0, 'shell');
 
     // Workbench with a trainer board
     box(2.2, 0.06, 0.9, 0.15, 0.9, -0.3);
@@ -300,6 +304,127 @@ function init() {
     pointGeo.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
     scene.add(new THREE.Points(pointGeo, pointMat));
 
+    // ───────── Contact shadows (fade in with the reveal)
+    const shadowTex = (() => {
+        const c = document.createElement('canvas');
+        c.width = c.height = 128;
+        const g = c.getContext('2d');
+        const grad = g.createRadialGradient(64, 64, 8, 64, 64, 64);
+        grad.addColorStop(0, 'rgba(0,0,0,1)');
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        g.fillStyle = grad;
+        g.fillRect(0, 0, 128, 128);
+        return new THREE.CanvasTexture(c);
+    })();
+    const shadowMat = new THREE.MeshBasicMaterial({ map: shadowTex, color: 0x000000, transparent: true, depthWrite: false, opacity: 0 });
+    function shadow(w, d, x, z) {
+        const m = new THREE.Mesh(new THREE.PlaneGeometry(w, d), shadowMat);
+        m.rotation.x = -Math.PI / 2;
+        m.position.set(x, 0.004, z);
+        scene.add(m);
+    }
+    shadow(2.9, 1.5, 0.15, -0.3);
+    shadow(1.1, 3.3, -2.5, -0.85);
+    shadow(0.7, 0.7, 0.75, 0.65);
+
+    // ───────── Mixed reality layer: virtual training content anchored in the scanned room.
+    // Appears once the scan completes.
+    const virtual = new THREE.Group();
+    scene.add(virtual);
+    const virtualMats = [];
+    const vMat = (mat, base = 1) => { mat.userData.base = base; mat.transparent = true; mat.opacity = 0; virtualMats.push(mat); return mat; };
+
+    const BREAKER = new THREE.Vector3(-0.14, 1.36, -0.55);
+
+    // Step card
+    const cardCanvas = document.createElement('canvas');
+    cardCanvas.width = 1024;
+    cardCanvas.height = 600;
+    const cardTex = new THREE.CanvasTexture(cardCanvas);
+    cardTex.colorSpace = THREE.SRGBColorSpace;
+    cardTex.anisotropy = 4;
+    const card = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 1.1 * 600 / 1024), vMat(new THREE.MeshBasicMaterial({ map: cardTex, side: THREE.DoubleSide, depthWrite: false })));
+    card.position.set(1.35, 2.05, -0.5);
+    card.rotation.y = 0.62;
+    virtual.add(card);
+
+    function roundRect(g, x, y, w, h, r) {
+        g.beginPath();
+        g.moveTo(x + r, y);
+        g.arcTo(x + w, y, x + w, y + h, r);
+        g.arcTo(x + w, y + h, x, y + h, r);
+        g.arcTo(x, y + h, x, y, r);
+        g.arcTo(x, y, x + w, y, r);
+        g.closePath();
+    }
+
+    function drawCard(c) {
+        const g = cardCanvas.getContext('2d');
+        const W = cardCanvas.width, H = cardCanvas.height;
+        const font = (size, weight) => `${weight} ${size}px 'Schibsted Grotesk', system-ui, sans-serif`;
+        g.clearRect(0, 0, W, H);
+        roundRect(g, 6, 6, W - 12, H - 12, 28);
+        g.globalAlpha = 0.94;
+        g.fillStyle = c.bg;
+        g.fill();
+        g.globalAlpha = 1;
+        g.lineWidth = 5;
+        g.strokeStyle = c.accent;
+        g.stroke();
+
+        g.fillStyle = c.muted;
+        g.font = font(34, 500);
+        g.fillText('Step 3 of 7', 56, 88);
+        g.fillStyle = c.text;
+        g.font = font(64, 600);
+        g.fillText('Lockout/tagout', 56, 168);
+        g.font = font(38, 400);
+        g.fillStyle = c.muted;
+        ['Switch off breaker 2, apply your lock,', 'then verify zero energy before', 'opening the panel.'].forEach((line, i) => g.fillText(line, 56, 248 + i * 52));
+
+        // Progress: 3 of 7
+        const x0 = 56, y0 = 470, segW = (W - 112 - 6 * 12) / 7;
+        for (let i = 0; i < 7; i++) {
+            g.fillStyle = i < 3 ? c.accent : c.line;
+            g.fillRect(x0 + i * (segW + 12), y0, segW, 10);
+        }
+        g.fillStyle = c.accent;
+        g.font = font(34, 600);
+        g.fillText('Hold trigger to confirm', 56, 548);
+        cardTex.needsUpdate = true;
+    }
+
+    // Leader from the card to the breaker, a target frame, and a floor marker for the arc-flash boundary
+    const accentVirtual = vMat(new THREE.LineBasicMaterial());
+    const cardCorner = new THREE.Vector3(-0.55, -0.322, 0).applyEuler(card.rotation).add(card.position);
+    const leaderGeo = new THREE.BufferGeometry().setFromPoints([cardCorner, BREAKER.clone().add(new THREE.Vector3(0.05, 0.1, 0.05))]);
+    virtual.add(new THREE.Line(leaderGeo, accentVirtual));
+
+    const frameBox = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(0.2, 0.28, 0.14)), accentVirtual);
+    frameBox.position.copy(BREAKER).add(new THREE.Vector3(0, 0, -0.04));
+    virtual.add(frameBox);
+
+    const dashed = vMat(new THREE.LineDashedMaterial({ dashSize: 0.09, gapSize: 0.06 }));
+    const arcPts = [];
+    for (let i = 0; i <= 48; i++) {
+        const a = (i / 48) * Math.PI;
+        arcPts.push(new THREE.Vector3(-1.75 + Math.cos(a) * 1.15, 0.012, -2.3 + Math.sin(a) * 1.15));
+    }
+    const arc = new THREE.Line(new THREE.BufferGeometry().setFromPoints(arcPts), dashed);
+    arc.computeLineDistances();
+    virtual.add(arc);
+
+    const zoneMat = vMat(new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, depthWrite: false }), 0.08);
+    const zone = new THREE.Mesh(new THREE.CircleGeometry(1.15, 48, 0, Math.PI), zoneMat);
+    zone.rotation.x = Math.PI / 2;
+    zone.position.set(-1.75, 0.008, -2.3);
+    virtual.add(zone);
+
+    function setVirtualOpacity(t) {
+        virtualMats.forEach((m) => { m.opacity = m.userData.base * t; });
+        shadowMat.opacity = 0.22 * Math.min(1, uniforms.uRevealRadius.value / 6);
+    }
+
     // ───────── Hand ray and reticle
     const accentLine = new THREE.LineBasicMaterial({ transparent: true, opacity: 0.9, depthTest: false });
     const rayGeo = new THREE.BufferGeometry();
@@ -329,6 +454,10 @@ function init() {
         uniforms.uInkAlpha.value = parseFloat(v('--scene-ink-alpha')) || 0.5;
         accentLine.color.set(v('--accent'));
         ringMat.color.set(v('--accent'));
+        accentVirtual.color.set(v('--accent'));
+        dashed.color.set(v('--accent'));
+        zoneMat.color.set(v('--accent'));
+        drawCard({ bg: v('--bg'), text: v('--text'), muted: v('--muted'), line: v('--line'), accent: v('--accent') });
         requestRender();
     }
 
@@ -354,7 +483,7 @@ function init() {
         renderer.setSize(rect.width, rect.height, false);
         camera.aspect = rect.width / rect.height;
         // Keep the whole room in frame on narrow figures
-        orbit.radius = 12.6 / Math.min(1, camera.aspect / 1.3);
+        orbit.radius = 13.8 * Math.max(1, 1.45 / camera.aspect);
         camera.updateProjectionMatrix();
         uniforms.uPixelRatio.value = renderer.getPixelRatio();
         requestRender();
@@ -430,6 +559,8 @@ function init() {
     let waveStart = null;
     const REVEAL_MS = 2600;
     const WAVE_MS = 1800;
+    const VIRTUAL_MS = 900;
+    let virtualStart = null;
 
     function startWave(point) {
         uniforms.uWaveOrigin.value.copy(point);
@@ -459,6 +590,11 @@ function init() {
         const rt = Math.min(1, (now - revealStart) / REVEAL_MS);
         uniforms.uRevealRadius.value = easeOut(rt) * 9.5;
         if (rt < 1) animating = true;
+
+        if (rt >= 1 && virtualStart === null) virtualStart = reduceMotion.matches ? now - VIRTUAL_MS : now;
+        const vt = virtualStart === null ? 0 : Math.min(1, (now - virtualStart) / VIRTUAL_MS);
+        setVirtualOpacity(easeOut(vt));
+        if (virtualStart !== null && vt < 1) animating = true;
 
         if (waveStart !== null) {
             const wt = (now - waveStart) / WAVE_MS;
@@ -498,5 +634,6 @@ function init() {
 
     readColors();
     resize();
+    if (document.fonts) document.fonts.ready.then(readColors);
     figure.classList.add('is-ready');
 }

@@ -10,8 +10,9 @@
  *   summary   one or two sentences, shown on the card and at the top of the page
  *   org       who it was for or where it was built (optional)
  *   year      e.g. '2025' or '2024–25' (optional)
- *   featured  true to show it in the large "Selected work" rows (optional)
+ *   featured  true to show it in the "Selected work" grid; four fit best (optional)
  *   cover     { src, fit: 'cover' | 'contain', alt } — omit for a text-only card
+ *   coverText ['Unity', 'OpenXR', ...]  — lines set as a typographic cover when there is no image
  *   tools     ['Unity', 'OpenXR', ...]
  *   specs     [['Engine', 'Unreal Engine 5'], ...]  — key/value table on the page
  *   links     [{ label: 'Open the live site', href: 'https://...' }]
@@ -74,6 +75,7 @@ const PROJECTS = [
         featured: true,
         org: 'The Global Lab at WPI',
         year: '2024–25',
+        coverText: ['Unity', 'OpenXR', 'Meta Quest 3'],
         summary: 'An interactive VR data visualization that turns research on the environmental cost of AI (water, electricity, emissions) into a 3D experience for non-technical audiences.',
         tools: ['Unity', 'OpenXR', 'Meta Quest 3', 'Blender', 'ZBrush'],
         specs: [
@@ -105,6 +107,7 @@ const PROJECTS = [
         category: 'xr',
         featured: true,
         year: '2025–26',
+        coverText: ['WebXR', 'Meta Quest 3', 'Max refresh rate'],
         summary: 'Development pipelines and framework extensions for VR and learning content, including a WebXR packaging step that runs at the highest refresh rate Meta Quest 3 supports.',
         tools: ['WebXR', 'Claude Code', 'Codex', 'Meta Quest 3'],
         specs: [
@@ -127,6 +130,7 @@ const PROJECTS = [
         id: 'spi-glass',
         title: 'SPI-Glass',
         category: 'ar',
+        featured: true,
         summary: 'A multiplayer AR game that combines spatial computing with interactive storytelling.',
         cover: { src: 'images/web/spiglass.jpg', fit: 'contain', alt: 'SPI-Glass logo: a magnifying glass over a ghost and compass' },
         tools: ['Unity', 'Niantic Lightship ARDK'],

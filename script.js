@@ -74,26 +74,22 @@
         return `<dl class="specs">${specs.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl>`;
     }
 
-    // Featured case studies
+    // Featured: a 2 x 2 grid
     const featuredEl = document.getElementById('featured');
     if (featuredEl) {
-        featuredEl.innerHTML = PROJECTS.filter((p) => p.featured).map((p) => `
-            <article class="case${p.cover ? '' : ' case-text-only'}">
-                ${p.cover ? `<button class="case-media" type="button" data-open="${esc(p.id)}" aria-label="Open ${esc(p.title)}">
-                    <img src="${esc(p.cover.src)}" alt="${esc(p.cover.alt || '')}" loading="lazy">
-                </button>` : ''}
-                <div class="case-body">
-                    <div>
-                        <h3>${esc(p.title)}</h3>
-                        <p class="case-meta">${esc([p.org, p.year].filter(Boolean).join(', ') || typeLabel(p))}</p>
-                    </div>
-                    <div class="case-summary">
-                        <p>${esc(p.summary)}</p>
-                        <button class="text-button" type="button" data-open="${esc(p.id)}">View project</button>
-                    </div>
-                    ${specsList(p.specs)}
-                </div>
-            </article>`).join('');
+        featuredEl.innerHTML = PROJECTS.filter((p) => p.featured).map((p) => {
+            const lines = p.coverText || (p.tools || []).slice(0, 3);
+            const media = p.cover
+                ? `<img src="${esc(p.cover.src)}" alt="${esc(p.cover.alt || '')}" loading="lazy"${p.cover.fit === 'contain' ? ' data-fit="contain"' : ''}>`
+                : `<span class="case-type" aria-hidden="true">${lines.map((l) => `<span>${esc(l)}</span>`).join('')}</span>`;
+            return `
+            <article class="case">
+                <button class="case-media${p.cover ? '' : ' is-type'}" type="button" data-open="${esc(p.id)}" aria-label="Open ${esc(p.title)}">${media}</button>
+                <h3><button class="case-link" type="button" data-open="${esc(p.id)}">${esc(p.title)}</button></h3>
+                <p class="case-meta">${esc([p.org, p.year].filter(Boolean).join(', ') || typeLabel(p))}</p>
+                <p class="case-summary">${esc(p.summary)}</p>
+            </article>`;
+        }).join('');
     }
 
     // Index

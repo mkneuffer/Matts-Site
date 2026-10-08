@@ -383,21 +383,23 @@ ol[class] {
     }
 }
 
-/* ───────────────────────────── Featured case studies */
+/* ───────────────────────────── Featured: 2 x 2 grid */
 
 .featured {
     display: grid;
-    gap: clamp(64px, 9vw, 120px);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(48px, 6vw, 72px) clamp(24px, 3vw, 40px);
 }
 
 .case-media {
+    position: relative;
     display: block;
     width: 100%;
     padding: 0;
     border: 0;
     background: var(--surface);
     cursor: pointer;
-    aspect-ratio: 16 / 8;
+    aspect-ratio: 16 / 10;
     overflow: hidden;
 }
 
@@ -408,32 +410,84 @@ ol[class] {
     transition: transform 0.6s cubic-bezier(.2, .7, .2, 1);
 }
 
+.case-media img[data-fit="contain"] {
+    object-fit: contain;
+    padding: 8%;
+}
+
 .case-media:hover img {
-    transform: scale(1.015);
+    transform: scale(1.02);
 }
 
-.case-body {
-    display: grid;
-    grid-template-columns: minmax(0, 5fr) minmax(0, 4fr) minmax(0, 3fr);
-    gap: 16px clamp(32px, 4vw, 64px);
-    padding-top: 24px;
+/* Typographic cover for projects without imagery */
+.case-media.is-type {
+    background-color: var(--plate);
+    background-image:
+        linear-gradient(var(--line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 40px 40px;
+    background-position: -1px -1px;
 }
 
-.case-body h3 {
-    font-size: clamp(1.5rem, 2.2vw, 2rem);
-    letter-spacing: -0.015em;
+.case-type {
+    position: absolute;
+    left: 7%;
+    right: 7%;
+    bottom: 9%;
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    font-size: clamp(1.4rem, 2.6vw, 2.25rem);
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
 }
 
-.case-meta {
-    margin-top: 8px;
+.case-type span:not(:first-child) {
     color: var(--muted);
 }
 
-.case-summary p {
-    max-width: 32em;
+.case h3 {
+    margin-top: 18px;
+    font-size: clamp(1.25rem, 1.7vw, 1.5rem);
+    letter-spacing: -0.012em;
 }
 
-.case-summary .text-button {
+.case-link {
+    padding: 0;
+    border: 0;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    font-weight: inherit;
+    letter-spacing: inherit;
+    line-height: inherit;
+}
+
+.case:hover .case-link {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.18em;
+}
+
+.case-meta {
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 0.95rem;
+}
+
+.case-summary {
+    margin-top: 10px;
+    max-width: 34em;
+}
+
+@media (max-width: 760px) {
+    .featured {
+        grid-template-columns: 1fr;
+    }
+}
+
+.text-button {
     margin-top: 16px;
 }
 

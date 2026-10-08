@@ -231,3 +231,112 @@
     window.addEventListener('hashchange', openFromHash);
     openFromHash();
 })();
+
+// ───────────────────────────── Portrait: the second photo is revealed by the same scan wave that
+// maps the room in the hero, spreading from where the pointer enters and retracting on leave.
+
+(function () {
+    const el = document.querySelector('[data-portrait]');
+    const canvas = el && el.querySelector('canvas');
+    if (!canvas || !canvas.getContext) return;
+    const ctx = canvas.getContext('2d');
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const alt = new Image();
+    alt.src = el.dataset.altSrc;
+    const mask = document.createElement('canvas');
+    const mctx = mask.getContext('2d');
+
+    const DOT = '#9fb0ff';
+    let W = 0, H = 0, dpr = 1;
+    let origin = { x: 0.5, y: 0.5 };
+    let radius = 0;
+    let tween = null;
+    let on = false;
+    let rafId = 0;
+
+    function size() {
+        const rect = el.getBoundingClientRect();
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+        W = canvas.width = mask.width = Math.round(rect.width * dpr);
+        H = canvas.height = mask.height = Math.round(rect.height * dpr);
+        draw();
+    }
+
+    // Distance from the origin to the farthest corner: the radius that fully reveals the photo
+    function fullRadius() {
+        const ox = origin.x * W, oy = origin.y * H;
+        return Math.max(Math.hypot(ox, oy), Math.hypot(W - ox, oy), Math.hypot(ox, H - oy), Math.hypot(W - ox, H - oy)) + 30 * dpr;
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, W, H);
+        if (radius <= 0 || !alt.complete) return;
+        const ox = origin.x * W, oy = origin.y * H;
+        const feather = 26 * dpr;
+
+        // Second photo inside the wave, with a soft edge
+        mctx.globalCompositeOperation = 'source-over';
+        mctx.clearRect(0, 0, W, H);
+        mctx.drawImage(alt, 0, 0, W, H);
+        mctx.globalCompositeOperation = 'destination-in';
+        const g = mctx.createRadialGradient(ox, oy, 0, ox, oy, radius);
+        g.addColorStop(0, 'rgba(0,0,0,1)');
+        g.addColorStop(Math.max(0, (radius - feather) / radius), 'rgba(0,0,0,1)');
+        g.addColorStop(1, 'rgba(0,0,0,0)');
+        mctx.fillStyle = g;
+        mctx.fillRect(0, 0, W, H);
+        ctx.drawImage(mask, 0, 0);
+
+        // Scan dots riding the wavefront
+        if (radius < fullRadius() - 10 * dpr) {
+            const step = 9 * dpr, band = 16 * dpr, dot = 1.6 * dpr;
+            ctx.fillStyle = DOT;
+            for (let y = step / 2; y < H; y += step) {
+                for (let x = step / 2; x < W; x += step) {
+                    const d = Math.hypot(x - ox, y - oy) - (radius - feather / 2);
+                    const a = Math.exp(-(d * d) / (band * band));
+                    if (a < 0.05) continue;
+                    ctx.globalAlpha = a;
+                    ctx.fillRect(x - dot / 2, y - dot / 2, dot, dot);
+                }
+            }
+            ctx.globalAlpha = 1;
+        }
+    }
+
+    const easeOut = (t) => 1 - Math.pow(1 - t, 3);
+
+    function go(show, e) {
+        on = show;
+        if (show && radius <= 0 && e) {
+            const rect = el.getBoundingClientRect();
+            origin = { x: (e.clientX - rect.left) / rect.width, y: (e.clientY - rect.top) / rect.height };
+        }
+        const to = show ? fullRadius() : 0;
+        if (reduceMotion.matches) {
+            radius = to;
+            tween = null;
+            draw();
+            return;
+        }
+        tween = { from: radius, to, start: performance.now(), ms: show ? 900 : 650 };
+        if (!rafId) rafId = requestAnimationFrame(step);
+    }
+
+    function step(now) {
+        rafId = 0;
+        if (!tween) return;
+        const t = Math.min(1, (now - tween.start) / tween.ms);
+        radius = tween.from + (tween.to - tween.from) * easeOut(t);
+        draw();
+        if (t < 1) rafId = requestAnimationFrame(step);
+        else tween = null;
+    }
+
+    el.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') go(true, e); });
+    el.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') go(false, e); });
+    el.addEventListener('pointerdown', (e) => { if (e.pointerType !== 'mouse') go(!on, e); });
+
+    new ResizeObserver(size).observe(el);
+})();
+

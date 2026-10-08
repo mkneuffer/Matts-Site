@@ -48,6 +48,7 @@
         <div class="nav-inner">
             <a class="nav-name" href="index.html">Matthew Neuffer</a>
             <nav class="nav-links" id="nav-links" aria-label="Main">
+                <a href="#about">About</a>
                 <a href="#work">Work</a>
                 <a href="#index">Index</a>
                 <a href="#experience">Experience</a>
@@ -75,15 +76,34 @@
             </div>
             <figure class="hero-figure">
                 <div class="hero-canvas">
-                    <canvas aria-label="Interactive 3D scene: an energy lab with a holographic microgrid map over a planning table" role="img"></canvas>
+                    <canvas aria-label="Interactive 3D scene: a mixed reality room with a tabletop hologram cycling through project scenes" role="img"></canvas>
                 </div>
-                <div class="view-switch" role="group" aria-label="Scene view">
-                    <button type="button" data-view="scan" aria-pressed="true">Room scan</button>
-                    <button type="button" data-view="mr" aria-pressed="false">Mixed reality</button>
-                    <button type="button" data-view="vr" aria-pressed="false">Virtual reality</button>
+                <div class="view-switch" role="group" aria-label="Hologram scene">
+                    <button type="button" data-scene="microgrid" aria-pressed="true">Microgrid planner</button>
+                    <button type="button" data-scene="campus" aria-pressed="false">Campus AR tour</button>
+                    <button type="button" data-scene="data" aria-pressed="false">Data visualization</button>
+                    <button type="button" data-scene="ring" aria-pressed="false">Ring configurator</button>
                 </div>
-                <figcaption>A holographic microgrid map on a planning table, shown three ways a headset can present the room. Point at a surface to place a reticle; click to rescan from there.</figcaption>
+                <figcaption>A mixed reality room with a tabletop hologram that cycles through the kinds of work I build. Choose a scene to stay on it. Point at a surface to place a reticle; click to rescan.</figcaption>
             </figure>
+        </section>
+
+        <section class="section" id="about" aria-labelledby="about-title">
+            <header class="section-head">
+                <h2 id="about-title">About</h2>
+                <p>Hover or tap the photo.</p>
+            </header>
+            <div class="about">
+                <div class="portrait" data-portrait data-alt-src="images/web/headshot-2.jpg">
+                    <img src="images/web/headshot-1.jpg" alt="Matthew Neuffer" width="1000" height="1000">
+                    <canvas aria-hidden="true"></canvas>
+                </div>
+                <div class="about-copy">
+                    <p>I'm an XR Specialist at ProtoGen, where I build the Electrician Virtual Training Lab in Unreal Engine&nbsp;5 and the learning platform behind it. Before that I built VR data visualization at the Global Lab at WPI and real-time 3D jewelry tools at Robert Corio Designs.</p>
+                    <p>My work sits where headsets meet everything else: performance on standalone hardware, mixed reality that fits the room it's in, and the APIs, LMS/LRS connections, and cloud services that make training measurable.</p>
+                    <p>I studied Interactive Media and Game Design at Worcester Polytechnic Institute and live in Boston.</p>
+                </div>
+            </div>
         </section>
 
         <section class="section" id="work" aria-labelledby="work-title">

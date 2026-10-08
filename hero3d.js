@@ -1,5 +1,5 @@
 // Hero scene: a cutaway electrical training room, revealed by a depth-scan wave the way a
-// headset builds its room mesh. Point to aim a hand ray at surfaces; click to scan from there.
+// headset builds its room mesh. Point at a surface to place a reticle; click to scan from there.
 // Renders on demand, so it costs nothing while idle.
 
 import * as THREE from 'three';
@@ -343,8 +343,8 @@ function init() {
     const cardTex = new THREE.CanvasTexture(cardCanvas);
     cardTex.colorSpace = THREE.SRGBColorSpace;
     cardTex.anisotropy = 4;
-    const card = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 1.1 * 600 / 1024), vMat(new THREE.MeshBasicMaterial({ map: cardTex, side: THREE.DoubleSide, depthWrite: false })));
-    card.position.set(1.35, 2.05, -0.5);
+    const card = new THREE.Mesh(new THREE.PlaneGeometry(1.55, 1.55 * 600 / 1024), vMat(new THREE.MeshBasicMaterial({ map: cardTex, side: THREE.DoubleSide, depthWrite: false })));
+    card.position.set(1.65, 2.05, -0.75);
     card.rotation.y = 0.62;
     virtual.add(card);
 
@@ -396,7 +396,7 @@ function init() {
 
     // Leader from the card to the breaker, a target frame, and a floor marker for the arc-flash boundary
     const accentVirtual = vMat(new THREE.LineBasicMaterial());
-    const cardCorner = new THREE.Vector3(-0.55, -0.322, 0).applyEuler(card.rotation).add(card.position);
+    const cardCorner = new THREE.Vector3(-0.775, -0.454, 0).applyEuler(card.rotation).add(card.position);
     const leaderGeo = new THREE.BufferGeometry().setFromPoints([cardCorner, BREAKER.clone().add(new THREE.Vector3(0.05, 0.1, 0.05))]);
     virtual.add(new THREE.Line(leaderGeo, accentVirtual));
 
@@ -426,15 +426,6 @@ function init() {
     }
 
     // ───────── Hand ray and reticle
-    const accentLine = new THREE.LineBasicMaterial({ transparent: true, opacity: 0.9, depthTest: false });
-    const rayGeo = new THREE.BufferGeometry();
-    rayGeo.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, 0, 0, 0, 0], 3));
-    const ray = new THREE.Line(rayGeo, accentLine);
-    ray.renderOrder = 10;
-    ray.frustumCulled = false;
-    ray.visible = false;
-    scene.add(ray);
-
     const reticle = new THREE.Group();
     const ringMat = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, depthTest: false, transparent: true });
     reticle.add(new THREE.Mesh(new THREE.RingGeometry(0.075, 0.09, 40), ringMat));
@@ -452,7 +443,6 @@ function init() {
         uniforms.uInk.value.set(v('--scene-ink'));
         uniforms.uAccent.value.set(v('--accent'));
         uniforms.uInkAlpha.value = parseFloat(v('--scene-ink-alpha')) || 0.5;
-        accentLine.color.set(v('--accent'));
         ringMat.color.set(v('--accent'));
         accentVirtual.color.set(v('--accent'));
         dashed.color.set(v('--accent'));
@@ -483,7 +473,7 @@ function init() {
         renderer.setSize(rect.width, rect.height, false);
         camera.aspect = rect.width / rect.height;
         // Keep the whole room in frame on narrow figures
-        orbit.radius = 13.8 * Math.max(1, 1.45 / camera.aspect);
+        orbit.radius = 12.4 * Math.max(1, 1.4 / camera.aspect);
         camera.updateProjectionMatrix();
         uniforms.uPixelRatio.value = renderer.getPixelRatio();
         requestRender();
@@ -498,7 +488,7 @@ function init() {
         if (!pointerN) {
             hit = null;
             uniforms.uHover.value.set(0, -100, 0);
-            ray.visible = reticle.visible = false;
+            reticle.visible = false;
             return;
         }
         ndc.set(pointerN.x * 2 - 1, -(pointerN.y * 2 - 1));
@@ -507,7 +497,7 @@ function init() {
         hit = hits.find((h) => revealedAt(h.point)) || null;
         if (!hit) {
             uniforms.uHover.value.set(0, -100, 0);
-            ray.visible = reticle.visible = false;
+            reticle.visible = false;
             return;
         }
         const normal = hit.face.normal.clone().transformDirection(hit.object.matrixWorld);
@@ -516,17 +506,6 @@ function init() {
         reticle.visible = true;
         uniforms.uHover.value.copy(hit.point);
 
-        // The ray starts below and right of the viewer, like a right-hand controller
-        const right = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 0);
-        const up = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 1);
-        const fwd = new THREE.Vector3();
-        camera.getWorldDirection(fwd);
-        const origin = camera.position.clone().addScaledVector(right, 1.1).addScaledVector(up, -0.9).addScaledVector(fwd, 2.2);
-        const pos = rayGeo.attributes.position;
-        pos.setXYZ(0, origin.x, origin.y, origin.z);
-        pos.setXYZ(1, hit.point.x, hit.point.y, hit.point.z);
-        pos.needsUpdate = true;
-        ray.visible = true;
     }
 
     function revealedAt(point) {

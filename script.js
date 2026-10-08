@@ -319,7 +319,7 @@
             draw();
             return;
         }
-        tween = { from: radius, to, start: performance.now(), ms: show ? 900 : 650 };
+        tween = { from: radius, to, start: performance.now(), ms: show ? 1800 : 1300 };
         if (!rafId) rafId = requestAnimationFrame(step);
     }
 

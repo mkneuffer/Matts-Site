@@ -1,130 +1,178 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ProtoGen Work Process Assessment</title>
-  <link rel="stylesheet" href="styles.css">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impact of AI in VR: process, Matthew Neuffer</title>
+    <meta name="description" content="How the Impact of AI VR experience was planned, built, and tested at the WPI Global Lab.">
+    <link rel="icon" href="images/MN.jpg">
+    <script>
+        try { if (localStorage.getItem('theme') === 'light') document.documentElement.dataset.theme = 'light'; } catch (e) { }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <!-- Matomo -->
+    <script>
+        var _paq = window._paq = window._paq || [];
+        _paq.push(['trackPageView']);
+        _paq.push(['enableLinkTracking']);
+        (function () {
+            var u = "//analytics.matthewneuffer.com/";
+            _paq.push(['setTrackerUrl', u + 'matomo.php']);
+            _paq.push(['setSiteId', '1']);
+            var d = document, g = d.createElement('script'), s = d.getElementsByTagName('script')[0];
+            g.async = true; g.src = u + 'matomo.js'; s.parentNode.insertBefore(g, s);
+        })();
+    </script>
+    <!-- End Matomo Code -->
 </head>
+
 <body>
-<nav>
-  <div class="nav-content">
-    <div class="logo">ProtoGen</div>
-    <div class="nav-links">
-      <a href="#introduction" class="active">Introduction</a>
-      <a href="#planning" class="">Planning</a>
-      <a href="#tools" class="">Tools & Tech</a>
-      <a href="#tasks" class="">Task Breakdown</a>
-      <a href="#progress" class="">Progress</a>
-      <a href="#data" class="">Data Management</a>
-      <a href="#implementation" class="">Implementation</a>
-      <a href="#quality" class="">Quality Assurance</a>
-      <a href="#obstacles" class="">Obstacles</a>
-      <a href="#lessons" class="">Lessons Learned</a>
-      <a href="#conclusion" class="">Conclusion</a>
-    </div>
-  </div>
-</nav>
+    <header class="site-nav">
+        <div class="nav-inner">
+            <a class="nav-name" href="index.html">Matthew Neuffer</a>
+            <nav class="nav-links" id="nav-links" aria-label="Main">
+                <a href="index.html#work">Work</a>
+                <a href="index.html#experience">Experience</a>
+                <a href="resume.html">Resume</a>
+                <a href="index.html#contact">Contact</a>
+            </nav>
+            <button class="icon-button theme-toggle" type="button" aria-label="Switch to light theme">
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 7a5 5 0 0 1 0 10z" fill="currentColor"/></svg>
+            </button>
+            <button class="icon-button nav-toggle" type="button" aria-controls="nav-links" aria-expanded="false" aria-label="Open menu">
+                <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 8h16M4 16h16" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>
+            </button>
+        </div>
+    </header>
 
-<header class="hero">
-  <h1>ProtoGen Work Process Assessment</h1>
-  <p>VR Visualization of the Impact of AI</p>
-</header>
+    <main class="doc">
+        <header class="doc-head">
+            <div>
+                <h1>Impact of AI in VR</h1>
+                <p class="role">Process write-up: VR visualization of the impact of AI, The Global Lab at WPI</p>
+            </div>
+            <a class="button" href="index.html#project/impact-of-ai">Project overview</a>
+        </header>
 
-<main>
-  <section id="introduction" class="portfolio-section">
-    <h2>Introduction</h2>
-    <p>The goal of this VR experience was to help users understand AI's workings, focusing on environmental impacts like water usage, electricity consumption, and emissions. This project aimed to educate users and provide actionable insights into mitigating these impacts.</p>
-  </section>
+        <section class="doc-section" id="introduction">
+            <h2>Introduction</h2>
+            <div>
+                <p>The goal of this VR experience was to help users understand AI's workings, focusing on environmental impacts like water usage, electricity consumption, and emissions. This project aimed to educate users and provide actionable insights into mitigating these impacts.</p>
+            </div>
+        </section>
 
-  <section id="planning" class="portfolio-section">
-    <h2>Initial Planning and Requirement Analysis</h2>
-    <ul>
-      <li>Engaged stakeholders to define objectives, incorporating feedback from WPI stakeholders, supervisors, and public sentiment.</li>
-      <li>Analyzed knowledge gaps and aligned with WPI Global Lab’s educational goals.</li>
-      <li>Defined project scope focusing on environmental visualization, AI functionality, and user engagement.</li>
-    </ul>
-  </section>
+        <section class="doc-section" id="planning">
+            <h2>Initial Planning and Requirement Analysis</h2>
+            <div>
+                <ul>
+                <li>Engaged stakeholders to define objectives, incorporating feedback from WPI stakeholders, supervisors, and public sentiment.</li>
+                <li>Analyzed knowledge gaps and aligned with WPI Global Lab’s educational goals.</li>
+                <li>Defined project scope focusing on environmental visualization, AI functionality, and user engagement.</li>
+                </ul>
+            </div>
+        </section>
 
-  <section id="tools" class="portfolio-section">
-    <h2>Tools & Technologies</h2>
-    <ul>
-      <li><b>Hardware:</b> Meta Quest 3 selected for its standalone VR application support and versatility.</li>
-      <li><b>Software:</b> Unity chosen for rapid prototyping and OpenXR SDK for cross-platform compatibility.</li>
-      <li><b>Visualization Techniques:</b> Best practices in VR visualization to make abstract concepts tangible and actionable.</li>
-    </ul>
-  </section>
+        <section class="doc-section" id="tools">
+            <h2>Tools & Technologies</h2>
+            <div>
+                <ul>
+                <li><b>Hardware:</b> Meta Quest 3 selected for its standalone VR application support and versatility.</li>
+                <li><b>Software:</b> Unity chosen for rapid prototyping and OpenXR SDK for cross-platform compatibility.</li>
+                <li><b>Visualization Techniques:</b> Best practices in VR visualization to make abstract concepts tangible and actionable.</li>
+                </ul>
+            </div>
+        </section>
 
-  <section id="tasks" class="portfolio-section">
-    <h2>Task Breakdown</h2>
-    <ul>
-      <li>Stages: Research, visualization design, iterative feature development.</li>
-      <li>Milestones: Key demos tied to stakeholder feedback and feature testing.</li>
-    </ul>
-  </section>
+        <section class="doc-section" id="tasks">
+            <h2>Task Breakdown</h2>
+            <div>
+                <ul>
+                <li>Stages: Research, visualization design, iterative feature development.</li>
+                <li>Milestones: Key demos tied to stakeholder feedback and feature testing.</li>
+                </ul>
+            </div>
+        </section>
 
-  <section id="progress" class="portfolio-section">
-    <h2>Progress Tracking and Milestones</h2>
-    <ul>
-      <li>Maintained progress spreadsheet with tasks, deadlines, and progress bars.</li>
-      <li>Delivered regular demos for supervisor feedback and guided iterative improvements.</li>
-    </ul>
-  </section>
+        <section class="doc-section" id="progress">
+            <h2>Progress Tracking and Milestones</h2>
+            <div>
+                <ul>
+                <li>Maintained progress spreadsheet with tasks, deadlines, and progress bars.</li>
+                <li>Delivered regular demos for supervisor feedback and guided iterative improvements.</li>
+                </ul>
+            </div>
+        </section>
 
-  <section id="data" class="portfolio-section">
-    <h2>Data and Asset Management</h2>
-    <ul>
-      <li>Collaborated with partners to source data from research papers and reports.</li>
-      <li>Organized assets in shared drives and used tools like Blender and ZBrush for 3D modeling.</li>
-    </ul>
-  </section>
+        <section class="doc-section" id="data">
+            <h2>Data and Asset Management</h2>
+            <div>
+                <ul>
+                <li>Collaborated with partners to source data from research papers and reports.</li>
+                <li>Organized assets in shared drives and used tools like Blender and ZBrush for 3D modeling.</li>
+                </ul>
+            </div>
+        </section>
 
-  <section id="implementation" class="portfolio-section">
-    <h2>Implementation and Technical Details</h2>
-    <ul>
-      <li>Overcame challenges in scaling VR environments for large datasets.</li>
-      <li>Implemented optimizations using prefabs and reusable scripts for modular development.</li>
-      <li>Enhanced performance for smooth, high-quality VR experiences.</li>
-    </ul>
-  </section>
+        <section class="doc-section" id="implementation">
+            <h2>Implementation and Technical Details</h2>
+            <div>
+                <ul>
+                <li>Overcame challenges in scaling VR environments for large datasets.</li>
+                <li>Implemented optimizations using prefabs and reusable scripts for modular development.</li>
+                <li>Enhanced performance for smooth, high-quality VR experiences.</li>
+                </ul>
+            </div>
+        </section>
 
-  <section id="quality" class="portfolio-section">
-    <h2>Quality Assurance and Testing</h2>
-    <ul>
-      <li>Iterative testing with internal and external users.</li>
-      <li>Functional testing conducted at key milestones.</li>
-      <li>Feedback loops informed improvements and ensured objectives were met.</li>
-    </ul>
-  </section>
+        <section class="doc-section" id="quality">
+            <h2>Quality Assurance and Testing</h2>
+            <div>
+                <ul>
+                <li>Iterative testing with internal and external users.</li>
+                <li>Functional testing conducted at key milestones.</li>
+                <li>Feedback loops informed improvements and ensured objectives were met.</li>
+                </ul>
+            </div>
+        </section>
 
-  <section id="obstacles" class="portfolio-section">
-    <h2>Obstacle Management and Change Handling</h2>
-    <ul>
-      <li>Addressed challenges in translating complex AI systems into interactive elements.</li>
-      <li>Adapted to changes in SDK and hardware requirements as needed.</li>
-    </ul>
-  </section>
+        <section class="doc-section" id="obstacles">
+            <h2>Obstacle Management and Change Handling</h2>
+            <div>
+                <ul>
+                <li>Addressed challenges in translating complex AI systems into interactive elements.</li>
+                <li>Adapted to changes in SDK and hardware requirements as needed.</li>
+                </ul>
+            </div>
+        </section>
 
-  <section id="lessons" class="portfolio-section">
-    <h2>Retrospective and Lessons Learned</h2>
-    <ul>
-      <li>Aligned technology with user needs for effective education.</li>
-      <li>Valued stakeholder engagement and iterative feedback.</li>
-      <li>Learned optimization strategies for VR training simulations.</li>
-    </ul>
-  </section>
+        <section class="doc-section" id="lessons">
+            <h2>Retrospective and Lessons Learned</h2>
+            <div>
+                <ul>
+                <li>Aligned technology with user needs for effective education.</li>
+                <li>Valued stakeholder engagement and iterative feedback.</li>
+                <li>Learned optimization strategies for VR training simulations.</li>
+                </ul>
+            </div>
+        </section>
 
-  <section id="conclusion" class="portfolio-section">
-    <h2>Conclusion</h2>
-    <p>This project showcased the importance of aligning technology with user needs, emphasizing feedback-driven iterations to achieve educational goals effectively in immersive media.</p>
-  </section>
-</main>
+        <section class="doc-section" id="conclusion">
+            <h2>Conclusion</h2>
+            <div>
+                <p>This project showcased the importance of aligning technology with user needs, emphasizing feedback-driven iterations to achieve educational goals effectively in immersive media.</p>
+            </div>
+        </section>
+    </main>
 
-<footer>
-  <p>&copy; 2024 Matthew Neuffer. All rights reserved.</p>
-</footer>
+    <footer class="site-footer">
+        <p>&copy; <span data-year>2026</span> Matthew Neuffer</p>
+    </footer>
 
-<script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
+
 </html>

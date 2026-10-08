@@ -1,18 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Matthew Neuffer - Resume</title>
-    <link rel="stylesheet" href="styles.css"> <!-- Added shared styles -->
-    <link rel="stylesheet" href="resume.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="icon" href="images/MN.jpg" type="image/x-icon">
+    <title>Resume, Matthew Neuffer</title>
+    <meta name="description" content="Resume of Matthew Neuffer, XR Specialist: VR, AR, and mixed reality in Unreal Engine 5, Unity, and OpenXR.">
+    <link rel="icon" href="images/MN.jpg">
+    <script>
+        try { if (localStorage.getItem('theme') === 'light') document.documentElement.dataset.theme = 'light'; } catch (e) { }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
     <!-- Matomo -->
     <script>
         var _paq = window._paq = window._paq || [];
-        /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
         _paq.push(['trackPageView']);
         _paq.push(['enableLinkTracking']);
         (function () {
@@ -24,328 +28,174 @@
         })();
     </script>
     <!-- End Matomo Code -->
-
 </head>
 
 <body>
-    <nav>
-        <div class="nav-content">
-            <div class="logo">MN</div>
-            <div class="nav-links">
-                <a href="index.html">Portfolio</a>
-                <a href="resume.html" class="active">Resume</a>
-                <a href="https://contact.matthewneuffer.com">Contact</a>
-            </div>
-            <div class="hamburger">
-                <i class="fas fa-bars"></i>
-            </div>
-            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle Dark Mode">
-                <i class="fas fa-sun"></i>
+    <header class="site-nav">
+        <div class="nav-inner">
+            <a class="nav-name" href="index.html">Matthew Neuffer</a>
+            <nav class="nav-links" id="nav-links" aria-label="Main">
+                <a href="index.html#work">Work</a>
+                <a href="index.html#experience">Experience</a>
+                <a href="resume.html" aria-current="page">Resume</a>
+                <a href="index.html#contact">Contact</a>
+            </nav>
+            <button class="icon-button theme-toggle" type="button" aria-label="Switch to light theme">
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 7a5 5 0 0 1 0 10z" fill="currentColor"/></svg>
+            </button>
+            <button class="icon-button nav-toggle" type="button" aria-controls="nav-links" aria-expanded="false" aria-label="Open menu">
+                <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 8h16M4 16h16" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>
             </button>
         </div>
-    </nav>
+    </header>
 
-    <main class="resume-content">
-        <div class="resume-container">
-            <header class="resume-header">
-                <div class="resume-title">
-                    <h1>Matthew Neuffer</h1>
-                    <div class="contact-info">
-                        <span><i class="fas fa-envelope"></i> matthewneuffer@gmail.com</span>
-                        <span><i class="fas fa-phone"></i> 908-914-2894</span>
-                        <span><i class="fas fa-globe"></i> matthewneuffer.com</span>
-                        <span><i class="fab fa-linkedin"></i> in/matthewneuffer</span>
+    <main class="doc">
+        <header class="doc-head">
+            <div>
+                <h1>Matthew Neuffer</h1>
+                <p class="role">XR Specialist, spatial computing and interactive development</p>
+                <ul class="doc-contact">
+                    <li>Boston, MA</li>
+                    <li><a href="mailto:matthewneuffer@gmail.com">matthewneuffer@gmail.com</a></li>
+                    <li><a href="tel:+19089142894">908-914-2894</a></li>
+                    <li><a href="https://www.linkedin.com/in/matthewneuffer">linkedin.com/in/matthewneuffer</a></li>
+                </ul>
+            </div>
+            <a class="button button-primary" href="Resume/Matthew Neuffer Resume.pdf" download>Download PDF</a>
+        </header>
+
+        <section class="doc-section">
+            <h2>Summary</h2>
+            <div>
+                <p>XR Specialist focused on high-fidelity 3D training simulations, data visualization, and AR applications in Unreal Engine 5, Unity, and OpenXR. I deliver end-to-end XR systems across headset platforms, learning management integration, APIs, and cloud services, working in multidisciplinary Agile teams.</p>
+            </div>
+        </section>
+
+        <section class="doc-section">
+            <h2>Experience</h2>
+            <div>
+                <div class="entry">
+                    <div class="entry-head">
+                        <h3>XR Specialist, ProtoGen Inc.</h3>
+                        <span class="when">Mar 2025 – present</span>
                     </div>
-                </div>
-                <button class="download-btn"
-                    onclick="window.location.href='Resume/Matthew Neuffer Resume 2024 - AR_VR.pdf'">
-                    <i class="fas fa-download"></i> Download Resume
-                </button>
-            </header>
-
-            <section class="resume-section">
-                <h2><i class="fas fa-user"></i> Summary</h2>
-                <div class="section-content">
-                    <p>XR Specialist and Interactive Media Developer with extensive experience in AR/VR development, web
-                        applications, and game design. Currently pursuing a B.S. in Interactive Media and Game Design at
-                        Worcester Polytechnic Institute, combining artistic vision with technical expertise to create
-                        immersive digital experiences.</p>
-                </div>
-            </section>
-
-            <section class="resume-section">
-                <h2><i class="fas fa-briefcase"></i> Experience</h2>
-                <div class="section-content">
-                    <!-- XR Developer at ProtoGen Inc. -->
-                    <div class="experience-item">
-                        <div class="experience-header">
-                            <div class="title-company">
-                                <h3>XR Developer</h3>
-                                <span class="company">ProtoGen Inc.</span>
-                            </div>
-                            <div class="location-date">
-                                <span class="location">Remote</span><br>
-                                <span class="date">Feb 2025 - Present</span>
-                            </div>
-                        </div>
-                        <ul class="experience-details">
-                            <li>Developing VR and MR electrical training for the Quest 3.</li>
-                        </ul>
-                    </div>
-
-                    <!-- XR Specialist at Global Labs -->
-                    <div class="experience-item">
-                        <div class="experience-header">
-                            <div class="title-company">
-                                <h3>XR Specialist</h3>
-                                <span class="company">Global Labs, WPI</span>
-                            </div>
-                            <div class="location-date">
-                                <span class="location">Worcester, MA</span><br>
-                                <span class="date">October 2024 - Present</span>
-                            </div>
-                        </div>
-                        <ul class="experience-details">
-                            <li>Research and integrate cutting-edge VR/MR technologies for enhanced immersive
-                                experiences</li>
-                            <li>Develop VR data visualization tools for environmental impact analysis of AI systems</li>
-                            <li>Curate comprehensive AR/VR/MR resources to facilitate student innovation</li>
-                        </ul>
-                    </div>
-
-                    <!-- Technology Developer at Robert Corio Designs -->
-                    <div class="experience-item">
-                        <div class="experience-header">
-                            <div class="title-company">
-                                <h3>Technology Developer</h3>
-                                <span class="company">Robert Corio Designs</span>
-                            </div>
-                            <div class="location-date">
-                                <span class="location">Providence, RI</span><br>
-                                <span class="date">May 2024 - August 2024</span>
-                            </div>
-                        </div>
-                        <ul class="experience-details">
-                            <li>Spearheaded the design of an online jewelry configurator, increasing user engagement
-                            </li>
-                            <li>Created a searchable interactive render portal, reducing production time by 75%</li>
-                            <li>Improved internal processes with optimized render tools for enhanced client outcomes
-                            </li>
-                        </ul>
-                    </div>
-
-                    <!-- Web Designer, 3D Designer and Retail Associate at Robert Corio Designs -->
-                    <div class="experience-item">
-                        <div class="experience-header">
-                            <div class="title-company">
-                                <h3>Web Designer, 3D Designer and Retail Associate</h3>
-                                <span class="company">Robert Corio Designs</span>
-                            </div>
-                            <div class="location-date">
-                                <span class="location">Providence, RI</span><br>
-                                <span class="date">June 2023 – August 2023</span>
-                            </div>
-                        </div>
-                        <ul class="experience-details">
-                            <li>Designed and developed three (3) custom websites for each brand and retail location</li>
-                            <li>Utilized WebGI and web-based technology to visualize custom designed rings for
-                                customers, resulting in higher sales rate</li>
-                            <li>Researched and developed a system for custom rings to be viewed on holographic display
-                            </li>
-                            <li>Developed an online catalog of previous custom designs for both internal and external
-                                use</li>
-                        </ul>
-                    </div>
-
-                    <!-- Manufacturing Technician at Thorlabs -->
-                    <div class="experience-item">
-                        <div class="experience-header">
-                            <div class="title-company">
-                                <h3>Manufacturing Technician</h3>
-                                <span class="company">Thorlabs</span>
-                            </div>
-                            <div class="location-date">
-                                <span class="location">Newton, NJ</span><br>
-                                <span class="date">June 2022 – August 2022</span>
-                            </div>
-                        </div>
-                        <ul class="experience-details">
-                            <li>Operated an ultrasonic cleaning line, reducing back order quantity</li>
-                            <li>Worked with laser interferometer, hand cleaning, and hand polishing</li>
-                        </ul>
-                    </div>
-
-                    <!-- Employee at The New Jersey School of Woodwork -->
-                    <div class="experience-item">
-                        <div class="experience-header">
-                            <div class="title-company">
-                                <h3>Employee</h3>
-                                <span class="company">The New Jersey School of Woodwork</span>
-                            </div>
-                            <div class="location-date">
-                                <span class="location">Washington, NJ</span><br>
-                                <span class="date">June 2020 – August 2020</span>
-                            </div>
-                        </div>
-                        <ul class="experience-details">
-                            <li>Set up an audio and visual system for the school so students can see what the teacher is
-                                doing, and for class recording</li>
-                            <li>Created the website and logo for the school</li>
-                            <li>Taught myself to use the CNC milling machine and became the primary operator of the
-                                machine</li>
-                            <li>Moved equipment, painted, drywalled, and contributed to other construction tasks during
-                                the building of the school</li>
-                        </ul>
-                    </div>
-
-                    <!-- Augmented Reality and Design Intern at WingLee Creative -->
-                    <div class="experience-item">
-                        <div class="experience-header">
-                            <div class="title-company">
-                                <h3>Augmented Reality and Design Intern</h3>
-                                <span class="company">WingLee Creative</span>
-                            </div>
-                            <div class="location-date">
-                                <span class="location">Hitchin, UK</span><br>
-                                <span class="date">July 2018 – August 2018</span>
-                            </div>
-                        </div>
-                        <ul class="experience-details">
-                            <li>Collaborated with the design team to develop marketing and brand solutions for clients
-                            </li>
-                            <li>Investigated and demonstrated ways to integrate Augmented Reality into marketing
-                                materials</li>
-                        </ul>
-                    </div>
-                </div>
-            </section>
-
-
-            <section class="resume-section">
-                <h2><i class="fas fa-code-branch"></i> Projects</h2>
-                <div class="section-content">
-                    <div class="projects-grid">
-                        <div class="project-item">
-                            <h3>SPI-Glass</h3>
-                            <p>Led development of AR game using Unity Engine and Niantic Lightship, combining spatial
-                                computing with interactive storytelling.</p>
-                        </div>
-                        <div class="project-item">
-                            <h3>Conserve AfRica</h3>
-                            <p>Developed AR scavenger hunt promoting conservation awareness through engaging 3D content
-                                and gamified exploration.</p>
-                        </div>
-                        <div class="project-item">
-                            <h3>Blair AR Tour</h3>
-                            <p>Designed 3D augmented reality tour showcasing architectural features of Blair Academy's
-                                newest building.</p>
-                        </div>
-                        <!-- New Projects -->
-                        <div class="project-item">
-                            <h3>Winter Wonderland</h3>
-                            <p>Planned, organized, and brought to life a campus-wide event at WPI, managing a budget of
-                                $30,000 and coordinating multiple external vendors.</p>
-                        </div>
-                        <div class="project-item">
-                            <h3>Okta Mailer Demo</h3>
-                            <p>Created a proof of concept AR experience to enhance mailers sent to C-Suite clients,
-                                showcasing innovation in AR technology for marketing purposes.</p>
-                        </div>
-                        <div class="project-item">
-                            <h3>Custom Jewelry Visualizer</h3>
-                            <p>Created a website allowing customers to view their custom jewelry with accurate materials
-                                and gemstones. Developed a system to streamline the process, improving render production
-                                time by 75%. Created a "Render Portal" for customers to find their renders by entering a
-                                custom password.</p>
-                        </div>
-                        <div class="project-item">
-                            <h3>Projection Mapping</h3>
-                            <p>Created music-reactive effects and designs for a miniature music festival stage,
-                                combining art and technology to enhance the live event experience.</p>
-                        </div>
-                        <!-- More Section -->
-                        <div class="project-item">
-                            <h3><a href="https://matthewneuffer.com" target="_blank">More</a></h3>
-                            <p>More projects can be found in my portfolio. <a href="https://matthewneuffer.com"
-                                    target="_blank">Visit here</a> for additional details and work.</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-
-            <section class="resume-section">
-                <h2><i class="fas fa-graduation-cap"></i> Education</h2>
-                <div class="section-content">
-                    <div class="education-item">
-                        <div class="education-header">
-                            <div class="school-degree">
-                                <h3>Worcester Polytechnic Institute</h3>
-                                <span class="degree">B.S. in Interactive Media and Game Design</span>
-                            </div>
-                            <div class="education-date">
-                                <span class="date">2021 - 2025</span>
-                            </div>
-                        </div>
-                        <p class="education-details">GPA: 3.72</p>
-                    </div>
-                </div>
-            </section>
-
-            <section class="resume-section">
-                <h2><i class="fas fa-tools"></i> Technical Skills</h2>
-                <div class="section-content">
-                    <ul class="skills-list">
-                        <li>Unity Engine</li>
-                        <li>Unreal Engine</li>
-                        <li>Blender</li>
-                        <li>Adobe Creative Suite</li>
-                        <li>Maya</li>
-                        <li>WebGI</li>
-                        <li>Three.js</li>
-                        <li>SQL</li>
-                        <li>Python</li>
-                        <li>C++</li>
-                        <li>Java</li>
-                        <li>Tableau</li>
-                        <li>ZBrush</li>
+                    <p class="where">Remote</p>
+                    <ul>
+                        <li>Develop the Electrician Virtual Training Lab in Unreal Engine 5 and OpenXR, delivering high-fidelity VR simulations of hazard mitigation and safety procedures on Meta Quest.</li>
+                        <li>Optimize CPU/GPU performance across desktop and Meta Quest 3 mobile hardware, extending a shared codebase to support VR, desktop, and mixed reality.</li>
+                        <li>Engineered an end-to-end learning management system for content delivery and trainee performance review; integrated the VR applications through custom APIs and LMS/LRS connections.</li>
                     </ul>
                 </div>
-            </section>
-
-            <section class="resume-section">
-                <h2><i class="fas fa-tools"></i> Product Management Skills</h2>
-                <div class="section-content">
-                    <ul class="skills-list">
-                        <li>Data Analysis</li>
-                        <li>User Research</li>
-                        <li>Product Roadmaps</li>
-                        <li>Prototyping</li>
-                        <li>Stakeholder Communication</li>
+                <div class="entry">
+                    <div class="entry-head">
+                        <h3>XR Specialist, The Global Lab at WPI</h3>
+                        <span class="when">Oct 2024 – Aug 2025</span>
+                    </div>
+                    <p class="where">Worcester, MA</p>
+                    <ul>
+                        <li>Built an interactive VR data visualization in Unity, translating AI environmental impact data into a 3D experience for non-technical audiences.</li>
+                        <li>Researched current VR/MR hardware and SDKs to guide lab development decisions.</li>
+                        <li>Curated AR, VR, and MR development resources for students and faculty across disciplines.</li>
                     </ul>
                 </div>
-            </section>
-
-            <section class="resume-section">
-                <h2><i class="fas fa-tools"></i> Project Management Skills</h2>
-                <div class="section-content">
-                    <ul class="skills-list">
-                        <li>Project Planning</li>
-                        <li>Timeline Management</li>
-                        <li>Budgeting</li>
-                        <li>Resource Allocation</li>
-                        <li>Team Collaboration</li>
-                        <li>Stakeholder Management</li>
-                        <li>External Vendor Coordination</li>
+                <div class="entry">
+                    <div class="entry-head">
+                        <h3>Web/3D Designer &amp; Technology Developer, Robert Corio Designs</h3>
+                        <span class="when">Jun 2023 – Aug 2024</span>
+                    </div>
+                    <p class="where">Providence, RI</p>
+                    <ul>
+                        <li>Prototyped hardware-software integrations to display 3D jewelry assets on Looking Glass holographic displays.</li>
+                        <li>Designed and built an online jewelry configurator and three custom brand websites.</li>
+                        <li>Used WebGI to visualize custom-designed rings in real-time 3D, increasing customer engagement.</li>
+                        <li>Developed an interactive render database with user-facing search, reducing render turnaround time by 75%.</li>
                     </ul>
                 </div>
-            </section>
+                <div class="entry">
+                    <div class="entry-head">
+                        <h3>AR/Design Intern, WingLee Creative</h3>
+                        <span class="when">Jul 2018 – Aug 2018</span>
+                    </div>
+                    <p class="where">Hitchin, United Kingdom</p>
+                    <ul>
+                        <li>Developed marketing solutions integrating augmented reality for client campaigns.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
 
-        </div>
+        <section class="doc-section">
+            <h2>Projects</h2>
+            <div>
+                <div class="entry">
+                    <div class="entry-head">
+                        <h3><a href="index.html#project/vr-framework-webxr-pipeline">Custom VR framework and development pipelines</a></h3>
+                        <span class="when">Claude Code, Codex, WebXR</span>
+                    </div>
+                    <ul>
+                        <li>Built VR and learning development pipelines with Claude Code and Codex, plus custom framework extensions.</li>
+                        <li>Built a WebXR packaging pipeline that improves CPU/GPU performance and enables the maximum supported refresh rate on Meta Quest 3.</li>
+                    </ul>
+                </div>
+                <div class="entry">
+                    <div class="entry-head">
+                        <h3><a href="index.html#project/spi-glass">SPI-Glass</a></h3>
+                        <span class="when">Unity, Niantic Lightship ARDK</span>
+                    </div>
+                    <ul>
+                        <li>Engineered a multiplayer AR experience combining spatial computing with interactive storytelling, gameplay systems, UI, and real-time networked interactions.</li>
+                    </ul>
+                </div>
+                <div class="entry">
+                    <div class="entry-head">
+                        <h3><a href="index.html#project/blair-ar-tour">Blair AR Tour</a> and <a href="index.html#project/conserve-africa">Conserve AfRica</a></h3>
+                        <span class="when">Unity, Vuforia SDK</span>
+                    </div>
+                    <ul>
+                        <li>Built a mobile AR campus tour for Blair Academy on Android and iOS, delivering 3D building content through image and marker tracking.</li>
+                        <li>Developed a mobile AR scavenger hunt promoting conservation awareness through interactive 3D content.</li>
+                    </ul>
+                </div>
+                <div class="entry">
+                    <p class="where">Also ask me about: MR golf simulator, Anduril EagleEye clone, MR microgrid planner, Buffalo Trace / Warehouse H tour demo.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="doc-section">
+            <h2>Skills</h2>
+            <dl class="specs">
+                <dt>XR development</dt><dd>Unity, Unreal Engine 5, OpenXR, WebXR, Apple Xcode, Reality Composer</dd>
+                <dt>Platforms</dt><dd>Meta Quest 3, Apple Vision Pro, desktop, Android, iOS</dd>
+                <dt>Languages</dt><dd>C++, C, Java, Python, SQL</dd>
+                <dt>Cloud and APIs</dt><dd>AWS, Cloudflare, Railway; custom APIs, LMS/LRS integration, Stripe API</dd>
+                <dt>3D and design</dt><dd>Blender, Maya, 3ds Max, ZBrush, WebGI, CAD, Adobe Creative Suite</dd>
+                <dt>Interactive systems</dt><dd>TouchDesigner, full-stack development, UI/UX, human-computer interaction, Tableau</dd>
+                <dt>AI tools</dt><dd>Claude Code, Codex</dd>
+                <dt>Practice</dt><dd>Agile development, systems engineering</dd>
+            </dl>
+        </section>
+
+        <section class="doc-section">
+            <h2>Education</h2>
+            <div>
+                <div class="entry">
+                    <div class="entry-head">
+                        <h3>Worcester Polytechnic Institute</h3>
+                        <span class="when">Aug 2021 – May 2025</span>
+                    </div>
+                    <p class="where">B.S. Interactive Media and Game Design. Dean's List.</p>
+                    <ul>
+                        <li>Alpha Tau Omega: Vice President, Secretary, Social Media Chair</li>
+                        <li>Interfraternity Council: Director of Marketing</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
     </main>
 
-    <footer>
-        <p>&copy; 2024 Matthew Neuffer. All rights reserved.</p>
+    <footer class="site-footer">
+        <p>&copy; <span data-year>2026</span> Matthew Neuffer</p>
     </footer>
 
     <script src="script.js"></script>

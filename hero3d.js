@@ -17,8 +17,16 @@ function webglAvailable() {
     }
 }
 
-if (figure && canvas && webglAvailable()) init();
-else if (figure) figure.classList.add('is-unavailable');
+if (figure && canvas && webglAvailable()) {
+    try {
+        init();
+    } catch (err) {
+        console.error('[hero3d]', err);
+        figure.classList.add('is-unavailable');
+    }
+} else if (figure) {
+    figure.classList.add('is-unavailable');
+}
 
 function init() {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -94,6 +102,7 @@ function init() {
                 vec3 col = mix(uSurfaceA, uSurfaceB, light) * ao;
                 col = mix(col, uAccent, scanGlow(vWorld) * 0.35);
                 gl_FragColor = vec4(col, 1.0);
+                #include <colorspace_fragment>
             }`,
         polygonOffset: true,
         polygonOffsetFactor: 1,
@@ -111,6 +120,7 @@ function init() {
             float a = ${alphaExpr};
             if (a < 0.01) discard;
             gl_FragColor = vec4(${colorExpr}, a);
+            #include <colorspace_fragment>
         }`;
 
     const lineVertex = /* glsl */`
@@ -165,9 +175,10 @@ function init() {
                 if (dot(c, c) > 0.25) discard;
                 float r = revealed(vWorld);
                 float hover = 1.0 - smoothstep(0.15, 0.6, distance(vWorld, uHover));
-                float a = r * 0.12 + scanGlow(vWorld) + hover * 0.85 * r;
+                float a = r * 0.2 + scanGlow(vWorld) + hover * 0.85 * r;
                 if (a < 0.01) discard;
                 gl_FragColor = vec4(uAccent, min(a, 1.0));
+                #include <colorspace_fragment>
             }`,
         transparent: true,
         depthWrite: false
@@ -343,7 +354,7 @@ function init() {
         renderer.setSize(rect.width, rect.height, false);
         camera.aspect = rect.width / rect.height;
         // Keep the whole room in frame on narrow figures
-        orbit.radius = 14.5 / Math.min(1, camera.aspect / 1.3);
+        orbit.radius = 12.6 / Math.min(1, camera.aspect / 1.3);
         camera.updateProjectionMatrix();
         uniforms.uPixelRatio.value = renderer.getPixelRatio();
         requestRender();

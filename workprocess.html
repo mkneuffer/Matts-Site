@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
@@ -8,11 +8,16 @@
     <meta name="description" content="How the Impact of AI VR experience was planned, built, and tested at the WPI Global Lab.">
     <link rel="icon" href="images/MN.jpg">
     <script>
-        try { if (localStorage.getItem('theme') === 'light') document.documentElement.dataset.theme = 'light'; } catch (e) { }
+        (function () {
+            var t = null;
+            try { t = localStorage.getItem('theme'); } catch (e) { }
+            if (t !== 'light' && t !== 'dark') t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            document.documentElement.dataset.theme = t;
+        })();
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <!-- Matomo -->
     <script>
@@ -36,16 +41,13 @@
             <a class="nav-name" href="index.html">Matthew Neuffer</a>
             <nav class="nav-links" id="nav-links" aria-label="Main">
                 <a href="index.html#work">Work</a>
+                <a href="index.html#index">Index</a>
                 <a href="index.html#experience">Experience</a>
                 <a href="resume.html">Resume</a>
                 <a href="index.html#contact">Contact</a>
             </nav>
-            <button class="icon-button theme-toggle" type="button" aria-label="Switch to light theme">
-                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 7a5 5 0 0 1 0 10z" fill="currentColor"/></svg>
-            </button>
-            <button class="icon-button nav-toggle" type="button" aria-controls="nav-links" aria-expanded="false" aria-label="Open menu">
-                <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 8h16M4 16h16" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>
-            </button>
+            <button class="theme-toggle" type="button">Dark</button>
+            <button class="nav-toggle" type="button" aria-controls="nav-links" aria-expanded="false">Menu</button>
         </div>
     </header>
 
@@ -170,6 +172,7 @@
 
     <footer class="site-footer">
         <p>&copy; <span data-year>2026</span> Matthew Neuffer</p>
+        <p>Boston, MA</p>
     </footer>
 
     <script src="script.js"></script>

@@ -27,11 +27,11 @@
  */
 
 const CATEGORIES = {
-    xr: { label: 'VR & mixed reality', axis: 'z' },
-    ar: { label: 'Augmented reality', axis: 'y' },
-    web: { label: 'Web & real-time 3D', axis: 'x' },
-    play: { label: 'Games & interaction', axis: null },
-    design: { label: '3D renders & graphic design', axis: null }
+    xr: { label: 'VR & mixed reality' },
+    ar: { label: 'Augmented reality' },
+    web: { label: 'Web & real-time 3D' },
+    play: { label: 'Games & interaction' },
+    design: { label: '3D renders & design' }
 };
 
 const PROJECTS = [

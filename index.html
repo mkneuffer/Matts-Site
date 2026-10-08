@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
@@ -11,12 +11,25 @@
     <meta property="og:image" content="https://matthewneuffer.com/images/web/esamtac.jpg">
     <link rel="icon" href="images/MN.jpg">
     <script>
-        try { if (localStorage.getItem('theme') === 'light') document.documentElement.dataset.theme = 'light'; } catch (e) { }
+        (function () {
+            var t = null;
+            try { t = localStorage.getItem('theme'); } catch (e) { }
+            if (t !== 'light' && t !== 'dark') t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            document.documentElement.dataset.theme = t;
+        })();
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
     <!-- Matomo -->
     <script>
         var _paq = window._paq = window._paq || [];
@@ -41,73 +54,64 @@
             <a class="nav-name" href="index.html">Matthew Neuffer</a>
             <nav class="nav-links" id="nav-links" aria-label="Main">
                 <a href="#work">Work</a>
+                <a href="#index">Index</a>
                 <a href="#experience">Experience</a>
                 <a href="resume.html">Resume</a>
                 <a href="#contact">Contact</a>
             </nav>
-            <button class="icon-button theme-toggle" type="button" aria-label="Switch to light theme">
-                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 7a5 5 0 0 1 0 10z" fill="currentColor"/></svg>
-            </button>
-            <button class="icon-button nav-toggle" type="button" aria-controls="nav-links" aria-expanded="false" aria-label="Open menu">
-                <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 8h16M4 16h16" stroke="currentColor" stroke-width="1.6" fill="none"/></svg>
-            </button>
+            <button class="theme-toggle" type="button">Dark</button>
+            <button class="nav-toggle" type="button" aria-controls="nav-links" aria-expanded="false">Menu</button>
         </div>
     </header>
 
     <main>
         <section class="hero" aria-labelledby="hero-title">
-            <canvas class="hero-scene" aria-hidden="true"></canvas>
-            <dl class="hud" aria-hidden="true">
-                <div><dt>render</dt><dd data-hud="fps">-- fps</dd></div>
-                <div><dt>head</dt><dd data-hud="head">0.00 1.60 4.50</dd></div>
-                <div><dt>ray hit</dt><dd data-hud="hit">none</dd></div>
-                <div><dt>anchors</dt><dd data-hud="anchors">0 / 6</dd></div>
-            </dl>
             <div class="hero-copy">
-                <h1 id="hero-title">Matthew<br>Neuffer</h1>
-                <p class="hero-lede">XR developer. I build VR training simulations, mixed reality, and AR apps in Unreal Engine&nbsp;5, Unity, and OpenXR, and connect them to the systems around them: learning platforms, APIs, and cloud services.</p>
-                <p class="hero-meta">XR Specialist at ProtoGen. Based in Boston.</p>
-                <div class="hero-actions">
-                    <a class="button button-primary" href="#work">See selected work</a>
-                    <a class="button" href="Resume/Matthew Neuffer Resume.pdf" download>Download resume (PDF)</a>
-                </div>
+                <h1 id="hero-title">XR developer building training simulations and mixed reality for Meta&nbsp;Quest.</h1>
+                <p class="hero-lede">I work in Unreal Engine&nbsp;5, Unity, and OpenXR, and connect headset apps to the systems around them: learning platforms, APIs, and cloud services. Currently XR Specialist at ProtoGen, based in Boston.</p>
+                <ul class="hero-links">
+                    <li><a href="#work">Selected work</a></li>
+                    <li><a href="Resume/Matthew Neuffer Resume.pdf" download>Resume (PDF)</a></li>
+                    <li><a href="mailto:matthewneuffer@gmail.com">matthewneuffer@gmail.com</a></li>
+                </ul>
             </div>
-            <p class="hero-hint" aria-hidden="true">Aim with your pointer. Click the floor to place an anchor.</p>
+            <figure class="hero-figure">
+                <div class="hero-canvas">
+                    <canvas aria-label="Interactive 3D scene of an electrical training room, revealed by a depth scan" role="img"></canvas>
+                </div>
+                <figcaption>A training room, rendered the way a headset scans and meshes a space. Point to aim the hand ray; click a surface to rescan from there.</figcaption>
+            </figure>
         </section>
 
         <section class="section" id="work" aria-labelledby="work-title">
-            <div class="section-head">
+            <header class="section-head">
                 <h2 id="work-title">Selected work</h2>
-                <p>Current XR work, with the engine, runtime, and hardware behind each.</p>
-            </div>
+                <p>Current XR work, with the engine, runtime, and hardware behind each project.</p>
+            </header>
             <div class="featured" id="featured"></div>
         </section>
 
         <section class="section" id="index" aria-labelledby="index-title">
-            <div class="section-head">
-                <h2 id="index-title">All projects</h2>
-                <p>Everything, filterable by type. Select a project for video, live sites, and details.</p>
-            </div>
-            <div class="filters" role="group" aria-label="Filter projects" id="filters"></div>
-            <ul class="project-grid" id="project-grid"></ul>
-            <div class="ask-about">
-                <h3>Not written up yet</h3>
-                <p>Recent projects I'm happy to walk through in a conversation:</p>
-                <ul id="ask-about"></ul>
-            </div>
+            <header class="section-head">
+                <h2 id="index-title">Index</h2>
+                <p>Every project, from AR experiments in 2017 to today. Open any row for video, live sites, and details.</p>
+            </header>
+            <div class="filters" role="group" aria-label="Filter projects by type" id="filters"></div>
+            <ul class="index-list" id="project-grid"></ul>
+            <p class="ask-about" id="ask-about"></p>
         </section>
 
         <section class="section" id="experience" aria-labelledby="experience-title">
-            <div class="section-head">
+            <header class="section-head">
                 <h2 id="experience-title">Experience</h2>
                 <p><a href="resume.html">Full resume</a></p>
-            </div>
+            </header>
             <ol class="timeline">
                 <li>
-                    <p class="when">Mar 2025 – present</p>
+                    <p class="when">2025–present</p>
                     <div>
                         <h3>XR Specialist, ProtoGen</h3>
-                        <p class="where">Remote</p>
+                        <p class="where">Remote, since March 2025</p>
                         <ul>
                             <li>Develop the Electrician Virtual Training Lab in Unreal Engine 5 and OpenXR: high-fidelity VR simulations of hazard mitigation and safety procedures on Meta Quest.</li>
                             <li>Optimize CPU and GPU performance across desktop and Meta Quest 3, extending a shared codebase to VR and mixed reality.</li>
@@ -116,10 +120,10 @@
                     </div>
                 </li>
                 <li>
-                    <p class="when">Oct 2024 – Aug 2025</p>
+                    <p class="when">2024–2025</p>
                     <div>
                         <h3>XR Specialist, The Global Lab at WPI</h3>
-                        <p class="where">Worcester, MA</p>
+                        <p class="where">Worcester, MA, October 2024 to August 2025</p>
                         <ul>
                             <li>Built an interactive VR data visualization in Unity that turns AI environmental impact data into a 3D experience for non-technical audiences.</li>
                             <li>Researched VR and MR hardware and SDKs to guide lab development, and curated XR resources for students and faculty.</li>
@@ -127,10 +131,10 @@
                     </div>
                 </li>
                 <li>
-                    <p class="when">Jun 2023 – Aug 2024</p>
+                    <p class="when">2023–2024</p>
                     <div>
-                        <h3>Web/3D Designer &amp; Technology Developer, Robert Corio Designs</h3>
-                        <p class="where">Providence, RI</p>
+                        <h3>Web/3D Designer and Technology Developer, Robert Corio Designs</h3>
+                        <p class="where">Providence, RI, June 2023 to August 2024</p>
                         <ul>
                             <li>Prototyped hardware-software integrations to show 3D jewelry assets on Looking Glass holographic displays.</li>
                             <li>Built an online jewelry configurator, three brand websites, and real-time 3D ring visualization with WebGI.</li>
@@ -139,17 +143,17 @@
                     </div>
                 </li>
                 <li>
-                    <p class="when">Aug 2021 – May 2025</p>
+                    <p class="when">2021–2025</p>
                     <div>
                         <h3>B.S. Interactive Media and Game Design, Worcester Polytechnic Institute</h3>
                         <p class="where">Worcester, MA. Dean's List.</p>
                     </div>
                 </li>
                 <li>
-                    <p class="when">Jul – Aug 2018</p>
+                    <p class="when">2018</p>
                     <div>
                         <h3>AR/Design Intern, WingLee Creative</h3>
-                        <p class="where">Hitchin, United Kingdom</p>
+                        <p class="where">Hitchin, United Kingdom, summer 2018</p>
                         <ul>
                             <li>Developed augmented reality marketing solutions for client campaigns.</li>
                         </ul>
@@ -159,9 +163,9 @@
         </section>
 
         <section class="section" id="stack" aria-labelledby="stack-title">
-            <div class="section-head">
+            <header class="section-head">
                 <h2 id="stack-title">Tools and platforms</h2>
-            </div>
+            </header>
             <dl class="stack">
                 <div><dt>XR development</dt><dd>Unreal Engine 5, Unity, OpenXR, WebXR, Xcode, Reality Composer, Niantic Lightship, Vuforia</dd></div>
                 <div><dt>Headsets and devices</dt><dd>Meta Quest 3, Apple Vision Pro, Android, iOS, desktop, Looking Glass</dd></div>
@@ -174,18 +178,20 @@
         </section>
 
         <section class="section contact" id="contact" aria-labelledby="contact-title">
-            <h2 id="contact-title">Building something in XR?</h2>
-            <p>I'm glad to talk about training simulations, mixed reality, or connecting a headset app to the rest of your stack.</p>
+            <h2 id="contact-title">Contact</h2>
+            <p>For roles, contract work, or a walkthrough of any project, email is best.</p>
+            <p class="contact-email"><a href="mailto:matthewneuffer@gmail.com">matthewneuffer@gmail.com</a></p>
             <ul class="contact-links">
-                <li><a href="mailto:matthewneuffer@gmail.com">matthewneuffer@gmail.com</a></li>
                 <li><a href="https://www.linkedin.com/in/matthewneuffer">LinkedIn</a></li>
                 <li><a href="https://contact.matthewneuffer.com">Contact form</a></li>
+                <li><a href="Resume/Matthew Neuffer Resume.pdf" download>Resume (PDF)</a></li>
             </ul>
         </section>
     </main>
 
     <footer class="site-footer">
         <p>&copy; <span data-year>2026</span> Matthew Neuffer</p>
+        <p>Boston, MA</p>
     </footer>
 
     <dialog class="project-sheet" id="project-sheet" aria-labelledby="sheet-title">
@@ -194,6 +200,7 @@
 
     <script src="projects.js"></script>
     <script src="script.js"></script>
+    <script type="module" src="hero3d.js"></script>
 </body>
 
 </html>

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matthew Neuffer - Portfolio</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="icon" href="images/MN.jpg" type="image/x-icon">
+    <!-- Matomo -->
+    <script>
+        var _paq = window._paq = window._paq || [];
+        /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+        _paq.push(['trackPageView']);
+        _paq.push(['enableLinkTracking']);
+        (function () {
+            var u = "//analytics.matthewneuffer.com/";
+            _paq.push(['setTrackerUrl', u + 'matomo.php']);
+            _paq.push(['setSiteId', '1']);
+            var d = document, g = d.createElement('script'), s = d.getElementsByTagName('script')[0];
+            g.async = true; g.src = u + 'matomo.js'; s.parentNode.insertBefore(g, s);
+        })();
+    </script>
+    <!-- End Matomo Code -->
+
+    <style>
+        .project-card img {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            object-fit: cover;
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <div class="nav-content">
+            <div class="logo">MN</div>
+            <div class="nav-links">
+                <a href="index.html" class="active">Portfolio</a>
+                <a href="resume.html">Resume</a>
+                <a href="https://contact.matthewneuffer.com">Contact</a>
+            </div>
+            <div class="hamburger">
+                <i class="fas fa-bars"></i>
+            </div>
+            <button class="theme-toggle" id="theme-toggle" aria-label="Toggle Dark Mode">
+                <i class="fas fa-sun"></i>
+            </button>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <h1>Matthew Neuffer</h1>
+        <p>XR Specialist & Interactive Developer</p>
+    </header>
+
+    <main>
+        <section id="vr" class="portfolio-section">
+            <h2>Virtual Reality</h2>
+            <div class="project-grid">
+                <div class="project-card"
+                    onclick="window.open('https://www.linkedin.com/posts/protogen-energy_skillsgap-energyworkforce-mixedreality-activity-7368742068308828160-nCLV?utm_source=share&utm_medium=member_desktop&rcm=ACoAACg_chkBgUSAegXLKovqOXaFuIqQSEKqdZQ', '_blank')">
+                    <img src="images/ESAMTAC IMAGE.webp" alt="ESAMTAC VR Training Lab">
+                    <h3>ESAMTAC VR Training Lab (ProtoGen)</h3>
+                    <p>VR Training Lab developed for Protogen.</p>
+                </div>
+                <div class="project-card" onclick="openProject('impactt')">
+                    <!-- <img src="images/impactt.png" alt="Impactt of AI"> -->
+                    <h3>Impact of AI (WPI Global Lab)</h3>
+                    <p>Virtual Reality experience to allow users to learn about the inner workings of AI as well as
+                        visualize the environmental impacts of AI.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="ar" class="portfolio-section">
+            <h2>Augmented Reality</h2>
+            <div class="project-grid">
+                <div class="project-card" onclick="openProject('spiGlass')">
+                    <img src="images/spiglassCover.png" alt="SPI-Glass Project">
+                    <h3>SPI-Glass</h3>
+                    <p>An AR game combining spatial computing and interactive storytelling using Unity Engine and
+                        Niantic Lightship.</p>
+                </div>
+                <div class="project-card" onclick="openProject('blairTour')">
+                    <img src="images/blairTourCover.png" alt="Blair AR Tour">
+                    <h3>Blair AR Tour</h3>
+                    <p>3D augmented reality tour showcasing architectural features of Blair Academy's newest building.
+                    </p>
+                </div>
+                <div class="project-card" onclick="openProject('africa')">
+                    <img src="images/conserveAfricaCover.png" alt="Conserve AfRica">
+                    <h3>Conserve AfRica</h3>
+                    <p>Interactive AR scavenger hunt promoting conservation awareness through 3D content and gamified
+                        exploration.</p>
+                </div>
+                <div class="project-card" onclick="openProject('oktaMailer')">
+                    <img src="images/oktaCover.PNG" alt="Okta Mailer Demo">
+                    <h3>Okta Mailer Demo</h3>
+                    <p>AR demonstration showcasing interactive mail experiences.</p>
+                </div>
+                <div class="project-card" onclick="openProject('arttour')">
+                    <img src="images/arttour.png" alt="ARt Tour">
+                    <h3>ARt Tours (HCI Project)</h3>
+                    <p>AR demonstration showcasing interactive museum experiences.</p>
+                </div>
+                <div class="project-card" onclick="openProject('arpool')">
+                    <img src="images/arpool.png" alt="AR Pool">
+                    <h3>AR Pool (TEI Project)</h3>
+                    <p>AR demonstration showcasing interactive pool experience.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="web" class="portfolio-section">
+            <h2>Web Development</h2>
+            <div class="project-grid">
+                <div class="project-card" onclick="openProject('hegeman')">
+                    <img src="images/hegemanCover.png" alt="Hegeman & Co">
+                    <h3>Hegeman & Co</h3>
+                    <p>Custom jewelry website with interactive product configurator and visualization tools.</p>
+                </div>
+                <div class="project-card" onclick="openProject('ringvis')">
+                    <img src="images/RingVis.png" alt="Ring Visualizer">
+                    <h3>3D Interactive Ring Visualizer</h3>
+                    <p>Interactive 3D platform for customers to visualize their custom jewelry.</p>
+                </div>
+                <div class="project-card" onclick="openProject('robertCorio')">
+                    <img src="images/robertCorioCover.png" alt="Robert Corio Designs">
+                    <h3>Robert Corio Designs</h3>
+                    <p>E-commerce platform featuring WebGL-based ring visualization system.</p>
+                </div>
+                <div class="project-card" onclick="openProject('elizabethSass')">
+                    <img src="images/elizabethSassCover.png" alt="Elizabeth Sass">
+                    <h3>Elizabeth Sass</h3>
+                    <p>Portfolio website showcasing artistic works and collections.</p>
+                </div>
+                <div class="project-card" onclick="openProject('njsow')">
+                    <img src="images/njsowCover.png" alt="NJ School of Woodwork">
+                    <h3>NJ School of Woodwork</h3>
+                    <p>Website for the New Jersey School of Woodwork with course management and registration system.</p>
+                </div>
+                <div class="project-card" onclick="openProject('videoGameDatabase')">
+                    <img src="images/videoGameCover.png" alt="Video Game Database">
+                    <h3>Video Game Database</h3>
+                    <p>Interactive database with advanced search and filtering capabilities. Created using MERN stack
+                        development.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="games" class="portfolio-section">
+            <h2>Game Design</h2>
+            <div class="project-grid">
+                <div class="project-card">
+                    <h3>Augmented Reality</h3>
+                    <p>Since 2017, I have experimented with a variety of AR SDKs, Game Engines, and Other AR platforms.
+                        Starting with AR Foundation and the Vuforia SDK, I then began to explore other platforms such as
+                        Apple's ARKit, Reality Composer, 8th wall (WebAR), and most recently Niantic's lightship ARDK
+                    </p>
+                </div>
+                <div class="project-card">
+                    <h3>Virtual Reality</h3>
+                    <p>As part of the Global Lab at WPI, I am currently developing a Virtual Reality experience to allow
+                        users to learn about the inner workings of AI as well as visualize the environmental impacts of
+                        AI. This project is in Unity, and uses OpenXR, while I have also experimented with Meta's
+                        development kits.</p>
+                </div>
+                <div class="project-card">
+                    <h3>Project Windward (Unreal 5)</h3>
+                    <p>Interactive puzzle game with dynamic ocean, sailing physics, and puzzles. This was a group
+                        project as part of the IMGD 4000 course. This project allowed me to gain further experience in
+                        Unreal Engine.</p>
+                </div>
+                <div class="project-card">
+                    <h3>Dragon Fly (C# Game Engine)</h3>
+                    <p>ASCII based game engine. Recreated as part of IMGD 3000 at WPI.</p>
+                </div>
+                <div class="project-card">
+                    <h3>Alternate Reality Game</h3>
+                    <p>Helped create and produce ARG experience in IMGD 2000. Acted as lead community manager.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="3d" class="portfolio-section">
+            <h2>3D Design</h2>
+            <div class="project-grid">
+                <div class="project-card" onclick="openProject('oogway')">
+                    <img src="images/oogway/IMG_5674.JPG" alt="Oogway">
+                    <h3>Master Oogway 3D model</h3>
+                    <p>Character modeling project.</p>
+                </div>
+                <div class="project-card" onclick="openProject('roomrender')">
+                    <img src="images/roomrenders/0001.PNG" alt="Room Renders">
+                    <h3>Room Renders</h3>
+                    <p>Photorealistic architectural visualization projects.</p>
+                </div>
+                <div class="project-card" onclick="openProject('basementrender')">
+                    <img src="images/basementrenders/0002 2.PNG" alt="Basement Renders">
+                    <h3>Basement Renders</h3>
+                    <p>Photorealistic architectural visualization projects.</p>
+                </div>
+                <div class="project-card" onclick="openProject('odeumrender')">
+                    <img src="images/odeumrenders/0239.PNG" alt="Odeum">
+                    <h3>WPI Odeum Oktoberfest Render</h3>
+                    <p>Character modeling and animation project.</p>
+                </div>
+                <div class="project-card" onclick="openProject('winterwonderland')">
+                    <img src="images/winterwonderland/Screen Shot 2024-12-27 at 5.22.59 PM.png" alt="Winter Wonderland">
+                    <h3>Winter Wonderland Render</h3>
+                    <p>Motion Tracked 3D render of proposed event on the WPI Quad.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="graphic" class="portfolio-section">
+            <h2>Graphic Design</h2>
+            <div class="project-grid" onclick="openProject('branding')">
+                <div class="project-card">
+                    <img src="images/graphicdesign/FinalRenderBrandingProject.jpg" alt="Brand Design">
+                    <h3>Brand Design</h3>
+                    <p>Corporate identity and branding projects.</p>
+                </div>
+                <div class="project-card" onclick="openProject('book')">
+                    <img src="images/graphicdesign/BookCoverFinal.jpg" alt="Book Cover">
+                    <h3>Book Cover</h3>
+                    <p>Editorial design and typography projects.</p>
+                </div>
+                <div class="project-card" onclick="openProject('njsowlogo')">
+                    <img src="images/graphicdesign/NJSOW LOGO BURN combo.jpg" alt="NJSOW Logo">
+                    <h3>NJSOW Logo</h3>
+                    <p>Logo design for New Jersey School of Woodwork.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="additional-projects" class="portfolio-section">
+            <h2>Additional Projects</h2>
+            <div class="project-grid">
+                <div class="project-card" onclick="openProject('projection')">
+                    <img src="images/projectionmap.png" alt="Projection Mapping">
+                    <h3>Projection Mapping</h3>
+                    <p>Using TouchDesigner for visuals, I created an immersive projection mapping experience for live
+                        events, blending motion graphics with real-world architecture.</p>
+                </div>
+                <div class="project-card" onclick="openProject('quickdraw')">
+                    <img src="images/quickDrawGame.png" alt="Quick Draw Game">
+                    <h3>Quick Draw Game</h3>
+                    <p>Developed a reaction-based game featuring timed challenges and dynamic feedback to enhance user
+                        engagement.</p>
+                </div>
+                <div class="project-card" onclick="openProject('racing')">
+                    <img src="images/accelerometerRacing.png" alt="Accelerometer Racing">
+                    <h3>Accelerometer Racing</h3>
+                    <p>Designed a racing game controlled by accelerometer input, emphasizing physics-based gameplay and
+                        responsive controls.</p>
+                </div>
+                <div class="project-card" onclick="openProject('gyro')">
+                    <img src="images/gyroMaze.png" alt="Smart Phone Gyro Maze">
+                    <h3>OSC Gyroscope Maze</h3>
+                    <p>Using OSC, a smartphone, and Unity I created a maze where the player uses the phones gyroscope to
+                        navigate.</p>
+                </div>
+            </div>
+        </section>
+
+
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Matthew Neuffer. All rights reserved.</p>
+    </footer>
+
+    <!-- Project Popup Overlay -->
+    <div id="project-popup" class="popup-overlay">
+        <div class="popup-content">
+            <button class="close-popup" onclick="closePopup()">X</button>
+            <h2 id="popup-title"></h2>
+            <p id="popup-description"></p>
+            <div class="popup-gallery" id="popup-gallery">
+                <!-- Images will be injected dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

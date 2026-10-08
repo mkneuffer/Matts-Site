@@ -371,7 +371,7 @@ ol[class] {
 
 @media (max-width: 900px) {
     .hero {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
         min-height: 0;
     }
 
@@ -420,7 +420,7 @@ ol[class] {
 
 @media (max-width: 760px) {
     .section-head {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
     }
 }
 
@@ -524,7 +524,7 @@ ol[class] {
 
 @media (max-width: 760px) {
     .featured {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
     }
 }
 
@@ -543,7 +543,7 @@ ol[class] {
 
 @media (max-width: 900px) {
     .case-body {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .case-media {
@@ -758,7 +758,7 @@ ol[class] {
 
 @media (max-width: 760px) {
     .timeline > li {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
     }
 }
 
@@ -783,7 +783,7 @@ ol[class] {
 
 @media (max-width: 760px) {
     .stack > div {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
     }
 }
 
@@ -1200,11 +1200,11 @@ body.has-sheet {
 @media (max-width: 760px) {
     .doc-head,
     .doc-section {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .doc-section .specs {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .doc-section .specs dd {

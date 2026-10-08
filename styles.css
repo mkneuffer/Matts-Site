@@ -198,8 +198,21 @@ ol[class] {
 }
 
 .theme-toggle {
-    min-width: 3.2em;
-    text-align: right;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    margin-right: -10px;
+}
+
+.theme-toggle .icon-sun,
+:root[data-theme="dark"] .theme-toggle .icon-moon {
+    display: none;
+}
+
+:root[data-theme="dark"] .theme-toggle .icon-sun {
+    display: block;
 }
 
 .nav-toggle {
@@ -321,6 +334,33 @@ ol[class] {
     display: none;
 }
 
+.view-switch {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 24px;
+    margin-top: 14px;
+    padding-right: var(--gutter);
+}
+
+.view-switch button {
+    padding: 4px 0;
+    border: 0;
+    border-bottom: 1px solid transparent;
+    background: none;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 0.95rem;
+}
+
+.view-switch button:hover {
+    color: var(--text);
+}
+
+.view-switch button[aria-pressed="true"] {
+    color: var(--text);
+    border-bottom-color: var(--accent);
+}
+
 .hero-figure figcaption {
     margin-top: 12px;
     max-width: 40em;
@@ -344,7 +384,8 @@ ol[class] {
         max-height: none;
     }
 
-    .hero-figure figcaption {
+    .hero-figure figcaption,
+    .view-switch {
         padding-left: var(--gutter);
     }
 }

@@ -11,12 +11,7 @@
     <meta property="og:image" content="https://matthewneuffer.com/images/web/esamtac.jpg">
     <link rel="icon" href="images/MN.jpg">
     <script>
-        (function () {
-            var t = null;
-            try { t = localStorage.getItem('theme'); } catch (e) { }
-            if (t !== 'light' && t !== 'dark') t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-            document.documentElement.dataset.theme = t;
-        })();
+        try { if (localStorage.getItem('theme') === 'dark') document.documentElement.dataset.theme = 'dark'; } catch (e) { }
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -59,7 +54,10 @@
                 <a href="resume.html">Resume</a>
                 <a href="#contact">Contact</a>
             </nav>
-            <button class="theme-toggle" type="button">Dark</button>
+            <button class="theme-toggle" type="button" aria-label="Switch to dark theme">
+                <svg class="icon-moon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+                <svg class="icon-sun" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            </button>
             <button class="nav-toggle" type="button" aria-controls="nav-links" aria-expanded="false">Menu</button>
         </div>
     </header>
@@ -79,7 +77,12 @@
                 <div class="hero-canvas">
                     <canvas aria-label="Interactive 3D scene of an electrical training room, revealed by a depth scan" role="img"></canvas>
                 </div>
-                <figcaption>A training room, rendered the way a headset scans and meshes a space. Point at any surface to place a reticle; click to rescan from there.</figcaption>
+                <div class="view-switch" role="group" aria-label="Scene view">
+                    <button type="button" data-view="scan" aria-pressed="true">Room scan</button>
+                    <button type="button" data-view="mr" aria-pressed="false">Mixed reality</button>
+                    <button type="button" data-view="vr" aria-pressed="false">Virtual reality</button>
+                </div>
+                <figcaption>One electrical training lab, three ways a headset can present it. Point at a surface to place a reticle; click to rescan from there.</figcaption>
             </figure>
         </section>
 

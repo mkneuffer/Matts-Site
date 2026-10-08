@@ -3,36 +3,23 @@
 (function () {
     const root = document.documentElement;
     const themeButton = document.querySelector('.theme-toggle');
-    const systemDark = window.matchMedia('(prefers-color-scheme: dark)');
-
-    function storedTheme() {
-        try { return localStorage.getItem('theme'); } catch (e) { return null; }
-    }
 
     function applyTheme(theme) {
-        root.dataset.theme = theme;
-        if (themeButton) {
-            const next = theme === 'light' ? 'dark' : 'light';
-            themeButton.textContent = next === 'dark' ? 'Dark' : 'Light';
-            themeButton.setAttribute('aria-label', `Switch to ${next} theme`);
-        }
+        if (theme === 'dark') root.dataset.theme = 'dark';
+        else delete root.dataset.theme;
+        if (themeButton) themeButton.setAttribute('aria-label', theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
         document.dispatchEvent(new CustomEvent('themechange'));
     }
 
-    applyTheme(root.dataset.theme || (systemDark.matches ? 'dark' : 'light'));
+    applyTheme(root.dataset.theme === 'dark' ? 'dark' : 'light');
 
     if (themeButton) {
         themeButton.addEventListener('click', () => {
-            const theme = root.dataset.theme === 'light' ? 'dark' : 'light';
+            const theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
             try { localStorage.setItem('theme', theme); } catch (e) { }
             applyTheme(theme);
         });
     }
-
-    // Follow the system setting until the visitor picks a theme
-    systemDark.addEventListener('change', (e) => {
-        if (!storedTheme()) applyTheme(e.matches ? 'dark' : 'light');
-    });
 
     const navToggle = document.querySelector('.nav-toggle');
     const navLinks = document.getElementById('nav-links');

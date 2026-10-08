@@ -1,5 +1,9 @@
-// Hero scene: a cutaway electrical training room, revealed by a depth-scan wave the way a
-// headset builds its room mesh. Point at a surface to place a reticle; click to scan from there.
+// Hero scene: one electrical training lab shown three ways a headset can present it.
+//   scan  - the room mesh a headset builds: edges and a point cloud
+//   mr    - mixed reality: the real room as clay, with virtual training content anchored in it
+//   vr    - virtual reality: the same lab fully rendered
+// On load, a depth-scan wave spreads from the trainee's headset, then the view settles into
+// mixed reality. Point at a surface to place a reticle; click to scan from there.
 // Renders on demand, so it costs nothing while idle.
 
 import * as THREE from 'three';
@@ -38,14 +42,21 @@ function init() {
     const camera = new THREE.PerspectiveCamera(28, 1, 0.1, 100);
     const target = new THREE.Vector3(-0.2, 1.1, -0.3);
 
+    // Where the trainee stands, and where their headset is. The scan starts from the headset.
+    const TRAINEE = new THREE.Vector3(0.3, 0, 0.5);
+    const HEADSET = new THREE.Vector3(TRAINEE.x, 1.6, TRAINEE.z - 0.08);
+
     // ───────── Shared uniforms
     const uniforms = {
         uSurfaceA: { value: new THREE.Color() },
         uSurfaceB: { value: new THREE.Color() },
+        uPlate: { value: new THREE.Color() },
         uInk: { value: new THREE.Color() },
         uAccent: { value: new THREE.Color() },
         uInkAlpha: { value: 0.5 },
-        uRevealOrigin: { value: new THREE.Vector3(0.7, 1.6, 0.9) },
+        uScan: { value: 1 },
+        uVR: { value: 0 },
+        uRevealOrigin: { value: HEADSET.clone() },
         uRevealRadius: { value: 0 },
         uWaveOrigin: { value: new THREE.Vector3() },
         uWaveRadius: { value: -10 },
@@ -61,6 +72,8 @@ function init() {
         uniform float uWaveRadius;
         uniform float uWaveStrength;
         uniform vec3 uHover;
+        uniform float uScan;
+        uniform float uVR;
         varying vec3 vWorld;
         float revealed(vec3 p) {
             return 1.0 - smoothstep(uRevealRadius - 0.35, uRevealRadius, distance(p, uRevealOrigin));
@@ -76,43 +89,51 @@ function init() {
         }
     `;
 
-    const makeSurface = (tone) => new THREE.ShaderMaterial({
-        uniforms: { ...uniforms, uTone: { value: tone } },
-        vertexShader: /* glsl */`
-            varying vec3 vWorld;
-            varying vec3 vNormal;
-            void main() {
-                vec4 w = modelMatrix * vec4(position, 1.0);
-                vWorld = w.xyz;
-                vNormal = normalize(mat3(modelMatrix) * normal);
-                gl_Position = projectionMatrix * viewMatrix * w;
-            }`,
-        fragmentShader: /* glsl */`
-            uniform vec3 uSurfaceA;
-            uniform vec3 uSurfaceB;
-            uniform vec3 uAccent;
-            uniform float uTone;
-            varying vec3 vNormal;
-            ${common}
-            void main() {
-                float r = revealed(vWorld);
-                if (r < 0.02) discard;
-                vec3 n = normalize(vNormal);
-                float light = 0.5 + 0.5 * max(dot(n, normalize(vec3(0.5, 0.9, 0.7))), 0.0);
-                // Darken toward the room's inside corners: the middle of the three plane distances
-                vec3 c = vec3(vWorld.y, vWorld.x + 3.0, vWorld.z + 2.5);
-                float mid = c.x + c.y + c.z - max(c.x, max(c.y, c.z)) - min(c.x, min(c.y, c.z));
-                float ao = mix(0.74, 1.0, smoothstep(0.0, 1.2, mid));
-                vec3 col = mix(uSurfaceA, uSurfaceB, light * uTone) * ao;
-                col = mix(col, uAccent, scanGlow(vWorld) * 0.35);
-                gl_FragColor = vec4(col, 1.0);
-                #include <colorspace_fragment>
-            }`,
-        polygonOffset: true,
-        polygonOffsetFactor: 1,
-        polygonOffsetUnits: 1
-    });
-    const TONES = { floor: makeSurface(0.72), shell: makeSurface(0.86), object: makeSurface(1.0) };
+    const surfaceVertex = /* glsl */`
+        varying vec3 vWorld;
+        varying vec3 vNormal;
+        void main() {
+            vec4 w = modelMatrix * vec4(position, 1.0);
+            vWorld = w.xyz;
+            vNormal = normalize(mat3(modelMatrix) * normal);
+            gl_Position = projectionMatrix * viewMatrix * w;
+        }`;
+
+    const surfaceFragment = /* glsl */`
+        uniform vec3 uSurfaceA;
+        uniform vec3 uSurfaceB;
+        uniform vec3 uPlate;
+        uniform vec3 uAccent;
+        uniform vec3 uColor;
+        uniform float uTone;
+        varying vec3 vNormal;
+        ${common}
+        void main() {
+            float r = revealed(vWorld);
+            if (r < 0.02) discard;
+            vec3 n = normalize(vNormal);
+            float light = 0.5 + 0.5 * max(dot(n, normalize(vec3(0.5, 0.9, 0.7))), 0.0);
+            // Darken toward the room's inside corners: the middle of the three plane distances
+            vec3 c = vec3(vWorld.y, vWorld.x + 3.0, vWorld.z + 2.5);
+            float mid = c.x + c.y + c.z - max(c.x, max(c.y, c.z)) - min(c.x, min(c.y, c.z));
+            float ao = mix(0.74, 1.0, smoothstep(0.0, 1.2, mid));
+
+            vec3 clay = mix(uSurfaceA, uSurfaceB, light * uTone) * ao;
+            vec3 painted = uColor * (0.42 + 0.68 * light) * ao;
+            vec3 col = mix(clay, painted, uVR);
+            col = mix(col, uPlate, uScan * 0.88);
+            col = mix(col, uAccent, scanGlow(vWorld) * 0.35);
+            gl_FragColor = vec4(col, 1.0);
+            #include <colorspace_fragment>
+        }`;
+
+    const lineVertex = /* glsl */`
+        varying vec3 vWorld;
+        void main() {
+            vec4 w = modelMatrix * vec4(position, 1.0);
+            vWorld = w.xyz;
+            gl_Position = projectionMatrix * viewMatrix * w;
+        }`;
 
     const lineFragment = (colorExpr, alphaExpr) => /* glsl */`
         uniform vec3 uInk;
@@ -128,37 +149,18 @@ function init() {
             #include <colorspace_fragment>
         }`;
 
-    const lineVertex = /* glsl */`
-        varying vec3 vWorld;
-        void main() {
-            vec4 w = modelMatrix * vec4(position, 1.0);
-            vWorld = w.xyz;
-            gl_Position = projectionMatrix * viewMatrix * w;
-        }`;
-
-    const edgeMat = new THREE.ShaderMaterial({
+    const lineMat = (colorExpr, alphaExpr) => new THREE.ShaderMaterial({
         uniforms,
         vertexShader: lineVertex,
-        fragmentShader: lineFragment('mix(uInk, uAccent, g)', 'r * uInkAlpha + g * 0.9'),
+        fragmentShader: lineFragment(colorExpr, alphaExpr),
         transparent: true,
         depthWrite: false
     });
 
-    const guideMat = new THREE.ShaderMaterial({
-        uniforms,
-        vertexShader: lineVertex,
-        fragmentShader: lineFragment('mix(uInk, uAccent, g)', 'r * uInkAlpha * 0.35 + g * 0.6'),
-        transparent: true,
-        depthWrite: false
-    });
-
-    const boundaryMat = new THREE.ShaderMaterial({
-        uniforms,
-        vertexShader: lineVertex,
-        fragmentShader: lineFragment('uAccent', 'r * 0.9'),
-        transparent: true,
-        depthWrite: false
-    });
+    // Edges strengthen in the scan view and recede once the lab is fully rendered
+    const edgeMat = lineMat('mix(uInk, uAccent, max(g, uScan * 0.55))', 'r * uInkAlpha * (1.0 + uScan * 0.5) * (1.0 - uVR * 0.7) + g * 0.9');
+    const guideMat = lineMat('mix(uInk, uAccent, g)', 'r * uInkAlpha * 0.35 * (1.0 - uVR * 0.5) + g * 0.6');
+    const boundaryMat = lineMat('uAccent', 'r * 0.9 * (1.0 - uVR)');
 
     const pointMat = new THREE.ShaderMaterial({
         uniforms,
@@ -180,7 +182,7 @@ function init() {
                 if (dot(c, c) > 0.25) discard;
                 float r = revealed(vWorld);
                 float hover = 1.0 - smoothstep(0.15, 0.6, distance(vWorld, uHover));
-                float a = r * 0.03 + scanGlow(vWorld) + hover * 0.85 * r;
+                float a = r * (0.03 + uScan * 0.6) + scanGlow(vWorld) + hover * 0.85 * r;
                 if (a < 0.01) discard;
                 gl_FragColor = vec4(uAccent, min(a, 1.0));
                 #include <colorspace_fragment>
@@ -189,77 +191,118 @@ function init() {
         depthWrite: false
     });
 
-    // ───────── Room geometry (meters). Back wall at z = -2.5, left wall at x = -3.
+    // ───────── Geometry (meters). Back wall at z = -2.5, left wall at x = -3.
+    // Each solid carries a clay tone for the mixed reality view and a paint color for VR.
+    const PAINT = {
+        floor: '#59616b', wall: '#d6d8d2', steel: '#3b4048', top: '#b4875a', board: '#e7e4dc',
+        breaker: '#2b2f35', panel: '#a7acb2', danger: '#c8412f', caution: '#d9a520', conduit: '#9aa0a6',
+        cabinet: '#e2e4e6', status: '#2fbf6a', tray: '#7c838b', seat: '#2a2e33', skin: '#c9a184',
+        shirt: '#4a6fa5', pants: '#30353d', headset: '#f2f2f0'
+    };
+    const surfaceMats = new Map();
+    function surfaceMat(tone, paint) {
+        const key = `${tone}|${paint}`;
+        if (!surfaceMats.has(key)) {
+            surfaceMats.set(key, new THREE.ShaderMaterial({
+                uniforms: { ...uniforms, uTone: { value: tone }, uColor: { value: new THREE.Color(paint) } },
+                vertexShader: surfaceVertex,
+                fragmentShader: surfaceFragment,
+                polygonOffset: true,
+                polygonOffsetFactor: 1,
+                polygonOffsetUnits: 1
+            }));
+        }
+        return surfaceMats.get(key);
+    }
+
     const solids = [];
     const room = new THREE.Group();
     scene.add(room);
 
-    function addSolid(geometry, x, y, z, tone = 'object') {
-        const mesh = new THREE.Mesh(geometry, TONES[tone]);
-        mesh.position.set(x, y, z);
-        room.add(mesh);
-        const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geometry, 25), edgeMat);
-        edges.position.copy(mesh.position);
-        edges.rotation.copy(mesh.rotation);
-        room.add(edges);
+    function solid(geometry, { at = [0, 0, 0], paint = PAINT.panel, tone = 1, parent = room, quat = null, scale = null } = {}) {
+        const mesh = new THREE.Mesh(geometry, surfaceMat(tone, paint));
+        mesh.position.set(...at);
+        if (quat) mesh.quaternion.copy(quat);
+        if (scale) mesh.scale.set(...scale);
+        mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(geometry, 25), edgeMat));
+        parent.add(mesh);
         solids.push(mesh);
         return mesh;
     }
 
-    const box = (w, h, d, x, y, z, tone) => addSolid(new THREE.BoxGeometry(w, h, d), x, y, z, tone);
-    const cyl = (r, h, x, y, z, seg = 20) => addSolid(new THREE.CylinderGeometry(r, r, h, seg), x, y, z);
-    function rod(r, from, to) {
+    const box = (w, h, d, at, paint, opts = {}) => solid(new THREE.BoxGeometry(w, h, d), { at, paint, ...opts });
+    const cyl = (r, h, at, paint, seg = 20) => solid(new THREE.CylinderGeometry(r, r, h, seg), { at, paint });
+    const UP = new THREE.Vector3(0, 1, 0);
+    function rod(r, from, to, paint, opts = {}) {
         const a = new THREE.Vector3(...from), b = new THREE.Vector3(...to);
-        const len = a.distanceTo(b);
-        const mesh = addSolid(new THREE.CylinderGeometry(r, r, len, 10), 0, 0, 0);
+        const quat = new THREE.Quaternion().setFromUnitVectors(UP, b.clone().sub(a).normalize());
         const mid = a.clone().add(b).multiplyScalar(0.5);
-        const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.clone().sub(a).normalize());
-        mesh.position.copy(mid);
-        mesh.quaternion.copy(q);
-        const edges = room.children[room.children.length - 1];
-        edges.position.copy(mid);
-        edges.quaternion.copy(q);
+        return solid(new THREE.CylinderGeometry(r, r, a.distanceTo(b), 10), { at: mid.toArray(), paint, quat, ...opts });
     }
 
     // Shell: floor and two walls, thin so they read as a cutaway
-    box(6, 0.08, 5, 0, -0.04, 0, 'floor');
-    box(6, 3, 0.08, 0, 1.5, -2.54, 'shell');
-    box(0.08, 3, 5, -3.04, 1.5, 0, 'shell');
+    box(6, 0.08, 5, [0, -0.04, 0], PAINT.floor, { tone: 0.72 });
+    box(6, 3, 0.08, [0, 1.5, -2.54], PAINT.wall, { tone: 0.86 });
+    box(0.08, 3, 5, [-3.04, 1.5, 0], PAINT.wall, { tone: 0.86 });
 
     // Workbench with a trainer board
-    box(2.2, 0.06, 0.9, 0.15, 0.9, -0.3);
-    [[-0.88, -0.68], [1.18, -0.68], [-0.88, 0.08], [1.18, 0.08]].forEach(([x, z]) => box(0.06, 0.87, 0.06, x, 0.435, z));
-    box(2.1, 0.04, 0.8, 0.15, 0.25, -0.3);
-    box(1.1, 0.7, 0.05, 0.05, 1.28, -0.66);
-    [-0.32, -0.14, 0.04, 0.22].forEach((x) => box(0.12, 0.2, 0.08, x, 1.36, -0.6));
-    box(0.42, 0.14, 0.08, 0.05, 1.08, -0.6);
-    box(0.3, 0.08, 0.22, 0.85, 0.97, -0.2);
+    box(2.2, 0.06, 0.9, [0.15, 0.9, -0.3], PAINT.top);
+    [[-0.88, -0.68], [1.18, -0.68], [-0.88, 0.08], [1.18, 0.08]].forEach(([x, z]) => box(0.06, 0.87, 0.06, [x, 0.435, z], PAINT.steel));
+    box(2.1, 0.04, 0.8, [0.15, 0.25, -0.3], PAINT.steel);
+    box(1.1, 0.7, 0.05, [0.05, 1.28, -0.66], PAINT.board);
+    [-0.32, -0.14, 0.04, 0.22].forEach((x) => box(0.12, 0.2, 0.08, [x, 1.36, -0.6], PAINT.breaker));
+    box(0.42, 0.14, 0.08, [0.05, 1.08, -0.6], PAINT.breaker);
+    box(0.3, 0.08, 0.22, [0.85, 0.97, -0.2], PAINT.caution);
 
-    // Back wall: distribution panel, sub-panel, disconnect
-    box(0.75, 1.05, 0.2, -1.75, 1.45, -2.4);
-    box(0.5, 0.72, 0.18, -0.85, 1.6, -2.41);
-    box(0.3, 0.45, 0.15, 0.05, 1.5, -2.43);
-    box(0.14, 0.2, 0.08, 0.95, 1.3, -2.46);
+    // Back wall: distribution panel, sub-panel, disconnect, junction box
+    box(0.75, 1.05, 0.2, [-1.75, 1.45, -2.4], PAINT.panel);
+    box(0.5, 0.72, 0.18, [-0.85, 1.6, -2.41], PAINT.panel);
+    box(0.3, 0.45, 0.15, [0.05, 1.5, -2.43], PAINT.danger);
+    box(0.14, 0.2, 0.08, [0.95, 1.3, -2.46], PAINT.panel);
 
     // Conduit runs
-    rod(0.035, [-2.98, 2.62, -2.42], [1.4, 2.62, -2.42]);
-    rod(0.03, [-1.75, 1.98, -2.42], [-1.75, 2.62, -2.42]);
-    rod(0.03, [-0.85, 1.96, -2.42], [-0.85, 2.62, -2.42]);
-    rod(0.025, [0.05, 1.73, -2.43], [0.05, 2.62, -2.43]);
-    rod(0.025, [0.95, 1.4, -2.47], [0.95, 2.62, -2.47]);
+    rod(0.035, [-2.98, 2.62, -2.42], [1.4, 2.62, -2.42], PAINT.conduit);
+    rod(0.03, [-1.75, 1.98, -2.42], [-1.75, 2.62, -2.42], PAINT.conduit);
+    rod(0.03, [-0.85, 1.96, -2.42], [-0.85, 2.62, -2.42], PAINT.conduit);
+    rod(0.025, [0.05, 1.73, -2.43], [0.05, 2.62, -2.43], PAINT.conduit);
+    rod(0.025, [0.95, 1.4, -2.47], [0.95, 2.62, -2.47], PAINT.conduit);
 
     // Battery storage cabinets along the left wall
     [-1.65, -0.85, -0.05].forEach((z) => {
-        box(0.7, 1.9, 0.72, -2.63, 0.95, z);
-        box(0.02, 0.06, 0.12, -2.27, 1.55, z - 0.18);
-        box(0.02, 1.6, 0.01, -2.27, 0.95, z + 0.05);
+        box(0.7, 1.9, 0.72, [-2.63, 0.95, z], PAINT.cabinet);
+        box(0.02, 0.06, 0.12, [-2.27, 1.55, z - 0.18], PAINT.status);
+        box(0.02, 1.6, 0.01, [-2.27, 0.95, z + 0.05], PAINT.tray);
     });
-    box(0.3, 0.08, 3.6, -2.82, 2.45, -0.4);
+    box(0.3, 0.08, 3.6, [-2.82, 2.45, -0.4], PAINT.tray);
 
-    // Stool
-    cyl(0.19, 0.05, 0.75, 0.66, 0.65);
-    cyl(0.025, 0.6, 0.75, 0.33, 0.65, 8);
-    cyl(0.24, 0.03, 0.75, 0.015, 0.65);
+    // Stool, pushed aside
+    cyl(0.19, 0.05, [1.45, 0.66, 0.95], PAINT.seat);
+    cyl(0.025, 0.6, [1.45, 0.33, 0.95], PAINT.conduit, 8);
+    cyl(0.24, 0.03, [1.45, 0.015, 0.95], PAINT.seat);
+
+    // Trainee: a simple scale figure wearing a headset, right hand reaching toward the board
+    const trainee = new THREE.Group();
+    trainee.position.copy(TRAINEE);
+    room.add(trainee);
+    const person = { parent: trainee };
+    const limb = (r, from, dir, len, paint) => {
+        const d = new THREE.Vector3(...dir).normalize();
+        const a = new THREE.Vector3(...from);
+        const mid = a.clone().addScaledVector(d, len / 2);
+        solid(new THREE.CapsuleGeometry(r, len - 2 * r, 4, 16), {
+            at: mid.toArray(), paint, quat: new THREE.Quaternion().setFromUnitVectors(UP, d), ...person
+        });
+        return a.clone().addScaledVector(d, len);
+    };
+    limb(0.065, [-0.09, 0.05, 0], [0, 1, 0], 0.82, PAINT.pants);
+    limb(0.065, [0.09, 0.05, 0], [0, 1, 0], 0.82, PAINT.pants);
+    solid(new THREE.CapsuleGeometry(0.15, 0.36, 4, 16), { at: [0, 1.13, 0], paint: PAINT.shirt, scale: [1, 1, 0.68], ...person });
+    solid(new THREE.SphereGeometry(0.1, 20, 14), { at: [0, 1.57, 0.01], paint: PAINT.skin, ...person });
+    solid(new THREE.BoxGeometry(0.21, 0.1, 0.11), { at: [0, 1.6, -0.08], paint: PAINT.headset, ...person });
+    const leftHand = limb(0.045, [-0.21, 1.36, 0], [-0.08, -1, 0.02], 0.58, PAINT.shirt);
+    const rightHand = limb(0.045, [0.21, 1.36, 0], [0.15, -0.35, -1], 0.6, PAINT.shirt);
+    solid(new THREE.BoxGeometry(0.05, 0.05, 0.11), { at: leftHand.toArray(), paint: PAINT.breaker, ...person });
+    solid(new THREE.BoxGeometry(0.05, 0.05, 0.11), { at: rightHand.toArray(), paint: PAINT.breaker, ...person });
 
     // Floor and wall guides: 0.5 m tiles, wall seams
     const guides = [];
@@ -271,8 +314,8 @@ function init() {
     guideGeo.setAttribute('position', new THREE.Float32BufferAttribute(guides, 3));
     room.add(new THREE.LineSegments(guideGeo, guideMat));
 
-    // Play-area boundary around the trainee position
-    const bx0 = -1.2, bx1 = 1.9, bz0 = -1.05, bz1 = 1.8, by = 0.006;
+    // Play-area boundary around the trainee
+    const bx0 = -1.0, bx1 = 1.9, bz0 = -1.05, bz1 = 1.7, by = 0.006;
     const bGeo = new THREE.BufferGeometry();
     bGeo.setAttribute('position', new THREE.Float32BufferAttribute([
         bx0, by, bz0, bx1, by, bz0, bx1, by, bz0, bx1, by, bz1,
@@ -287,7 +330,7 @@ function init() {
     solids.forEach((mesh) => {
         const g = mesh.geometry;
         g.computeBoundingBox();
-        const s = g.boundingBox.getSize(new THREE.Vector3());
+        const s = g.boundingBox.getSize(new THREE.Vector3()).multiply(mesh.scale);
         const area = 2 * (s.x * s.y + s.y * s.z + s.x * s.z);
         const count = Math.min(2600, Math.max(24, Math.round(area * 170)));
         const sampler = new MeshSurfaceSampler(mesh).build();
@@ -304,7 +347,7 @@ function init() {
     pointGeo.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
     scene.add(new THREE.Points(pointGeo, pointMat));
 
-    // ───────── Contact shadows (fade in with the reveal)
+    // ───────── Contact shadows
     const shadowTex = (() => {
         const c = document.createElement('canvas');
         c.width = c.height = 128;
@@ -325,10 +368,10 @@ function init() {
     }
     shadow(2.9, 1.5, 0.15, -0.3);
     shadow(1.1, 3.3, -2.5, -0.85);
-    shadow(0.7, 0.7, 0.75, 0.65);
+    shadow(0.6, 0.6, 1.45, 0.95);
+    shadow(0.7, 0.55, TRAINEE.x, TRAINEE.z);
 
-    // ───────── Mixed reality layer: virtual training content anchored in the scanned room.
-    // Appears once the scan completes.
+    // ───────── Virtual training layer, anchored in the room. Shown in mixed reality and VR.
     const virtual = new THREE.Group();
     scene.add(virtual);
     const virtualMats = [];
@@ -346,6 +389,7 @@ function init() {
     const card = new THREE.Mesh(new THREE.PlaneGeometry(1.55, 1.55 * 600 / 1024), vMat(new THREE.MeshBasicMaterial({ map: cardTex, side: THREE.DoubleSide, depthWrite: false })));
     card.position.set(1.65, 2.05, -0.75);
     card.rotation.y = 0.62;
+    card.renderOrder = 5;
     virtual.add(card);
 
     function roundRect(g, x, y, w, h, r) {
@@ -382,7 +426,6 @@ function init() {
         g.fillStyle = c.muted;
         ['Switch off breaker 2, apply your lock,', 'then verify zero energy before', 'opening the panel.'].forEach((line, i) => g.fillText(line, 56, 248 + i * 52));
 
-        // Progress: 3 of 7
         const x0 = 56, y0 = 470, segW = (W - 112 - 6 * 12) / 7;
         for (let i = 0; i < 7; i++) {
             g.fillStyle = i < 3 ? c.accent : c.line;
@@ -394,11 +437,10 @@ function init() {
         cardTex.needsUpdate = true;
     }
 
-    // Leader from the card to the breaker, a target frame, and a floor marker for the arc-flash boundary
+    // Leader from the card to the breaker, a target frame, and the arc-flash boundary
     const accentVirtual = vMat(new THREE.LineBasicMaterial());
     const cardCorner = new THREE.Vector3(-0.775, -0.454, 0).applyEuler(card.rotation).add(card.position);
-    const leaderGeo = new THREE.BufferGeometry().setFromPoints([cardCorner, BREAKER.clone().add(new THREE.Vector3(0.05, 0.1, 0.05))]);
-    virtual.add(new THREE.Line(leaderGeo, accentVirtual));
+    virtual.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([cardCorner, BREAKER.clone().add(new THREE.Vector3(0.05, 0.1, 0.05))]), accentVirtual));
 
     const frameBox = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(0.2, 0.28, 0.14)), accentVirtual);
     frameBox.position.copy(BREAKER).add(new THREE.Vector3(0, 0, -0.04));
@@ -414,16 +456,11 @@ function init() {
     arc.computeLineDistances();
     virtual.add(arc);
 
-    const zoneMat = vMat(new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, depthWrite: false }), 0.08);
+    const zoneMat = vMat(new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, depthWrite: false }), 0.1);
     const zone = new THREE.Mesh(new THREE.CircleGeometry(1.15, 48, 0, Math.PI), zoneMat);
     zone.rotation.x = Math.PI / 2;
     zone.position.set(-1.75, 0.008, -2.3);
     virtual.add(zone);
-
-    function setVirtualOpacity(t) {
-        virtualMats.forEach((m) => { m.opacity = m.userData.base * t; });
-        shadowMat.opacity = 0.22 * Math.min(1, uniforms.uRevealRadius.value / 6);
-    }
 
     // ───────── Surface reticle
     const reticle = new THREE.Group();
@@ -440,6 +477,7 @@ function init() {
         const v = (name) => cs.getPropertyValue(name).trim();
         uniforms.uSurfaceA.value.set(v('--scene-shade'));
         uniforms.uSurfaceB.value.set(v('--scene-light'));
+        uniforms.uPlate.value.set(v('--plate'));
         uniforms.uInk.value.set(v('--scene-ink'));
         uniforms.uAccent.value.set(v('--accent'));
         uniforms.uInkAlpha.value = parseFloat(v('--scene-ink-alpha')) || 0.5;
@@ -449,6 +487,35 @@ function init() {
         zoneMat.color.set(v('--accent'));
         drawCard({ bg: v('--bg'), text: v('--text'), muted: v('--muted'), line: v('--line'), accent: v('--accent') });
         requestRender();
+    }
+
+    // ───────── View modes
+    const VIEWS = {
+        scan: { scan: 1, vr: 0, virtual: 0, shadow: 0 },
+        mr: { scan: 0, vr: 0, virtual: 1, shadow: 0.22 },
+        vr: { scan: 0, vr: 1, virtual: 1, shadow: 0.34 }
+    };
+    const viewButtons = Array.from(figure.querySelectorAll('[data-view]'));
+    const state = { ...VIEWS.scan };
+    let view = 'scan';
+    let viewChosen = false;
+
+    function setView(name, { chosen = false } = {}) {
+        if (!VIEWS[name]) return;
+        view = name;
+        if (chosen) viewChosen = true;
+        viewButtons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === name)));
+        if (revealDone) startWave(HEADSET);
+        requestRender();
+    }
+
+    viewButtons.forEach((b) => b.addEventListener('click', () => setView(b.dataset.view, { chosen: true })));
+
+    function applyState() {
+        uniforms.uScan.value = state.scan;
+        uniforms.uVR.value = state.vr;
+        virtualMats.forEach((m) => { m.opacity = m.userData.base * state.virtual; });
+        shadowMat.opacity = state.shadow * Math.min(1, uniforms.uRevealRadius.value / 6);
     }
 
     // ───────── Camera: orbit with gentle pointer parallax
@@ -484,17 +551,17 @@ function init() {
     const ndc = new THREE.Vector2();
     let hit = null;
 
+    function revealedAt(point) {
+        return point.distanceTo(uniforms.uRevealOrigin.value) < uniforms.uRevealRadius.value - 0.2;
+    }
+
     function updateHit() {
-        if (!pointerN) {
-            hit = null;
-            uniforms.uHover.value.set(0, -100, 0);
-            reticle.visible = false;
-            return;
+        hit = null;
+        if (pointerN) {
+            ndc.set(pointerN.x * 2 - 1, -(pointerN.y * 2 - 1));
+            raycaster.setFromCamera(ndc, camera);
+            hit = raycaster.intersectObjects(solids, false).find((h) => revealedAt(h.point)) || null;
         }
-        ndc.set(pointerN.x * 2 - 1, -(pointerN.y * 2 - 1));
-        raycaster.setFromCamera(ndc, camera);
-        const hits = raycaster.intersectObjects(solids, false);
-        hit = hits.find((h) => revealedAt(h.point)) || null;
         if (!hit) {
             uniforms.uHover.value.set(0, -100, 0);
             reticle.visible = false;
@@ -505,11 +572,6 @@ function init() {
         reticle.lookAt(hit.point.clone().add(normal));
         reticle.visible = true;
         uniforms.uHover.value.copy(hit.point);
-
-    }
-
-    function revealedAt(point) {
-        return point.distanceTo(uniforms.uRevealOrigin.value) < uniforms.uRevealRadius.value - 0.2;
     }
 
     function setPointer(e) {
@@ -533,13 +595,12 @@ function init() {
         requestRender();
     });
 
-    // ───────── Animation state
+    // ───────── Animation
     let revealStart = null;
+    let revealDone = false;
     let waveStart = null;
     const REVEAL_MS = 2600;
     const WAVE_MS = 1800;
-    const VIRTUAL_MS = 900;
-    let virtualStart = null;
 
     function startWave(point) {
         uniforms.uWaveOrigin.value.copy(point);
@@ -563,17 +624,27 @@ function init() {
     function frame(now) {
         rafId = 0;
         let animating = false;
+        const instant = reduceMotion.matches;
 
-        // First reveal, once the hero is on screen
-        if (revealStart === null) revealStart = reduceMotion.matches ? now - REVEAL_MS : now;
+        // First reveal from the headset, then settle into mixed reality
+        if (revealStart === null) revealStart = instant ? now - REVEAL_MS : now;
         const rt = Math.min(1, (now - revealStart) / REVEAL_MS);
         uniforms.uRevealRadius.value = easeOut(rt) * 9.5;
         if (rt < 1) animating = true;
+        if (rt >= 1 && !revealDone) {
+            revealDone = true;
+            if (!viewChosen) setView('mr');
+        }
 
-        if (rt >= 1 && virtualStart === null) virtualStart = reduceMotion.matches ? now - VIRTUAL_MS : now;
-        const vt = virtualStart === null ? 0 : Math.min(1, (now - virtualStart) / VIRTUAL_MS);
-        setVirtualOpacity(easeOut(vt));
-        if (virtualStart !== null && vt < 1) animating = true;
+        // Ease view parameters toward the chosen view
+        const goal = VIEWS[view];
+        const kv = instant ? 1 : 0.07;
+        Object.keys(goal).forEach((key) => {
+            state[key] += (goal[key] - state[key]) * kv;
+            if (Math.abs(goal[key] - state[key]) > 0.002) animating = true;
+            else state[key] = goal[key];
+        });
+        applyState();
 
         if (waveStart !== null) {
             const wt = (now - waveStart) / WAVE_MS;
@@ -590,7 +661,7 @@ function init() {
         // Ease the orbit toward the pointer
         const goalAz = orbit.az + (pointerN ? (pointerN.x - 0.5) * 0.16 : 0);
         const goalEl = orbit.el + (pointerN ? (pointerN.y - 0.5) * 0.06 : 0);
-        const k = reduceMotion.matches ? 1 : 0.08;
+        const k = instant ? 1 : 0.08;
         look.az += (goalAz - look.az) * k;
         look.el += (goalEl - look.el) * k;
         if (Math.abs(goalAz - look.az) + Math.abs(goalEl - look.el) > 0.0005) animating = true;

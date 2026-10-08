@@ -425,7 +425,7 @@ function init() {
         shadowMat.opacity = 0.22 * Math.min(1, uniforms.uRevealRadius.value / 6);
     }
 
-    // ───────── Hand ray and reticle
+    // ───────── Surface reticle
     const reticle = new THREE.Group();
     const ringMat = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, depthTest: false, transparent: true });
     reticle.add(new THREE.Mesh(new THREE.RingGeometry(0.075, 0.09, 40), ringMat));

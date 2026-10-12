@@ -1037,7 +1037,8 @@ ol[class] {
     object-fit: contain;
 }
 
-.blocks figcaption {
+.blocks figcaption,
+.sheet-cover figcaption {
     padding-top: 10px;
     color: var(--muted);
     font-size: 0.9rem;

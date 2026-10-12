@@ -1,0 +1,65 @@
+{
+  "created": "2026-10-12",
+  "note": "Generated covers are concept illustrations; no private source code or internal implementation details were used in the prompts.",
+  "images": [
+    {
+      "project": "mattseye",
+      "file": "images/web/mattseye.png",
+      "source": "User-provided title card"
+    },
+    {
+      "project": "tabletop-solar-labs",
+      "file": "images/web/tabletop-solar-labs.jpg",
+      "source": "https://i.ytimg.com/vi/oUKLLPOXRm4/maxresdefault.jpg",
+      "video": "https://youtu.be/oUKLLPOXRm4"
+    },
+    {
+      "project": "custom-sharp-ui",
+      "file": "images/web/custom-sharp-ui.jpg",
+      "source": "https://i.ytimg.com/vi/-yOJiWCGVF4/maxresdefault.jpg",
+      "video": "https://youtu.be/-yOJiWCGVF4"
+    },
+    {
+      "project": "microgrid-planner",
+      "file": "images/web/microgrid-planner.jpg",
+      "source": "https://i.ytimg.com/vi/c0HH90NfCmI/maxresdefault.jpg",
+      "video": "https://youtu.be/c0HH90NfCmI"
+    },
+    {
+      "project": "unity-vision-pro-pipeline",
+      "file": "images/web/unity-vision-pro-pipeline.jpg",
+      "source": "Built-in image_gen tool",
+      "style": "White blueprint sketch on warm white paper with gray graphite and pale blue-gray drafting lines",
+      "prompt": "Show the idea of moving an existing Unity XR scene into a native Apple Vision Pro app: a small wireframe cube-and-platform scene at left, a precise outlined spatial headset at right, and a clean directional connection between the scene and the headset. A second exploded view of the same cube scene floats just beyond the headset. Keep it abstract and conceptual; no code, screens of IDEs, logos, brand marks or invented technical internals."
+    },
+    {
+      "project": "warehouse-h",
+      "file": "images/web/warehouse-h.jpg",
+      "source": "Built-in image_gen tool",
+      "style": "White blueprint sketch on warm white paper with gray graphite and pale blue-gray drafting lines",
+      "prompt": "An architectural sketch of an American whiskey aging warehouse: an isometric cutaway with visible timber beams and neatly stacked barrels, plus one unlabeled glass whiskey bottle in the foreground. Communicate a spatial distillery tour and collection experience. This is an independent concept illustration, not a depiction of the actual Buffalo Trace building or actual branded packaging. No logos or bottle labels."
+    },
+    {
+      "project": "palm-planner",
+      "file": "images/web/palm-planner.jpg",
+      "source": "Built-in image_gen tool",
+      "style": "White blueprint sketch on warm white paper with gray graphite and pale blue-gray drafting lines",
+      "prompt": "A graceful line drawing of an open human palm angled toward the viewer, with three small task cards floating just above the palm, one simple check mark on a card, and a slim curved sequence of day cards beside the wrist. Convey a tactile spatial daily planner, with a card gently moving away from the hand. Anatomically convincing five-finger hand, uncluttered composition, no fake app screen or readable labels."
+    },
+    {
+      "project": "spatial-kanban",
+      "file": "images/web/spatial-kanban.jpg",
+      "source": "Built-in image_gen tool",
+      "style": "White blueprint sketch on warm white paper with gray graphite and pale blue-gray drafting lines",
+      "prompt": "An isometric floating task board in a room, three clearly separated columns with several rounded rectangular task cards, one card pulled away in front of the board, and a lightly sketched desk below it to establish spatial scale. Convey a room-based kanban workspace. Delicate placement guides and one restrained dashed gesture path. No readable labels, no fake software screenshot."
+    },
+    {
+      "project": "page-studio-xr",
+      "file": "images/web/page-studio-xr.jpg",
+      "source": "Built-in image_gen tool",
+      "style": "White blueprint sketch on warm white paper with gray graphite and pale blue-gray drafting lines",
+      "prompt": "A spatial web-design workspace: a large floating page canvas containing a simple wireframe hero image, heading bars and content blocks, flanked by a small phone, tablet and desktop layout preview at different sizes. A few component cards hover nearby as if being arranged into the page. Draw all panels in gentle isometric perspective to emphasize spatial creation. No code, no actual app screenshot, no readable text or logos."
+    }
+  ],
+  "sharedPrompt": "Use case: conceptual illustration\nAsset type: portfolio project thumbnail, landscape 16:10 composition\nPrimary request: a polished stylized white blueprint sketch that clearly represents this project.\nStyle/medium: architectural technical sketch on warm white paper, fine gray graphite and restrained pale blue-gray drafting lines, subtle paper texture, crisp stronger contour lines for the main subject. Mostly white; no solid blue background, dark backdrop, colorful fills or photorealistic rendering.\nComposition/framing: one coherent central subject, generous white space, readable at thumbnail size, wide composition with all important details safely away from the edge. Thin dimension guides, small crosshairs and drafting arcs are decorative only.\nText: none.\nConstraints: conceptual illustration, never a realistic screenshot of a working app. No proprietary technical diagrams, code, logos, watermarks, readable text or decorative title. Keep the illustration uncluttered.\nSubject: "
+}

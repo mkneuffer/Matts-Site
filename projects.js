@@ -53,9 +53,13 @@ const PROJECTS = [
             ['Map anchoring', 'GPS and compass data from phone scans'],
             ['Reference', 'Anduril’s EagleEye demonstration']
         ],
-        links: [{ label: 'Watch the demo', href: 'https://youtu.be/hP5raTcAusw' }],
+        links: [
+            { label: 'Watch the demo', href: 'https://youtu.be/hP5raTcAusw' },
+            { label: 'Inspiration: Anduril’s EagleEye', href: 'https://www.youtube.com/watch?v=x9B02pFKpJo' }
+        ],
         body: [
-            { type: 'text', text: 'I recreated the features shown in Anduril’s EagleEye demonstration as a system that connects multiple phones and headsets to the same environment. Each device contributes a point cloud, giving the central environment a spatial view assembled from multiple perspectives.' },
+            { type: 'heading', text: 'Credit and inspiration' },
+            { type: 'text', text: 'I recreated the features shown in Anduril Industries’ “EagleEye: Superpowers For Superheroes” demonstration as a system that connects multiple phones and headsets to the same environment. The original video is linked above as the reference and inspiration for MattsEye. Each device contributes a point cloud, giving the central environment a spatial view assembled from multiple perspectives.' },
             { type: 'heading', text: 'Device apps and cloud coordination' },
             { type: 'text', text: 'The cloud side runs on a web server. An iPhone app handles the phone side, while a Unity app runs on Meta Quest 3. Both connect to the central environment so phone and headset scans contribute to the same spatial view.' },
             { type: 'heading', text: 'From device scans to a shared environment' },

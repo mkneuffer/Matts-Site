@@ -1,0 +1,15 @@
+# Required public files and directories, relative to the repository root.
+index.html
+resume.html
+workprocess.html
+styles.css
+projects.js
+script.js
+hero3d.js
+images/
+Resume/
+# Optional public files: include only when tracked in Git.
+? .htaccess
+? robots.txt
+? sitemap.xml
+? favicon.ico

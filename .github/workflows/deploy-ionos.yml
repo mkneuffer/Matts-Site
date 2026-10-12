@@ -1,0 +1,60 @@
+name: Deploy to IONOS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Preview transfers or deploy the current main revision
+        type: choice
+        required: true
+        default: dry-run
+        options:
+          - dry-run
+          - deploy
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ionos-home677718046-mainsite
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.repository == 'mkneuffer/Matts-Site' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out the production revision
+        # Reviewed signed v7.0.1 release commit, verified 2026-10-12.
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Stage and validate public website files
+        run: python3 scripts/prepare_site.py
+
+      - name: Install SFTP tooling
+        timeout-minutes: 5
+        run: |
+          sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=30 update
+          sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=30 install --no-install-recommends -y lftp openssh-client
+
+      - name: Check deployment safeguards
+        run: PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -v
+
+      - name: Verify connection and preview or deploy
+        timeout-minutes: 15
+        env:
+          LFTP_PASSWORD: ${{ secrets.IONOS_SFTP_PASSWORD }}
+          DEPLOY_MODE: ${{ github.event_name == 'push' && 'deploy' || inputs.mode }}
+        run: |
+          set +x
+          case "$DEPLOY_MODE" in
+            dry-run) python3 scripts/deploy_ionos.py --dry-run ;;
+            deploy) python3 scripts/deploy_ionos.py --deploy ;;
+            *) echo "Invalid deployment mode" >&2; exit 1 ;;
+          esac

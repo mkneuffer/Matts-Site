@@ -165,8 +165,14 @@
         const i = PROJECTS.indexOf(p);
         const prev = PROJECTS[(i - 1 + PROJECTS.length) % PROJECTS.length];
         const next = PROJECTS[(i + 1) % PROJECTS.length];
+        const primaryVideo = (p.body || []).find((b) => b.type === 'video');
+        const bodyBlocks = (p.body || []).filter((b) => b !== primaryVideo);
+        const links = [...(p.links || [])];
+        if (primaryVideo && primaryVideo.youtube && !links.some((l) => l.href.includes(primaryVideo.youtube))) {
+            links.push({ label: 'Watch on YouTube', href: `https://youtu.be/${primaryVideo.youtube}` });
+        }
         const hasImageBlock = (p.body || []).some((b) => b.type === 'image' && p.cover && b.src === p.cover.src);
-        const showCover = p.cover && p.cover.fit !== 'contain' && !hasImageBlock && !(p.body || []).some((b) => b.type === 'gallery');
+        const showCover = !primaryVideo && p.cover && p.cover.fit !== 'contain' && !hasImageBlock && !(p.body || []).some((b) => b.type === 'gallery');
 
         inner.innerHTML = `
             <div class="sheet-bar">
@@ -177,10 +183,11 @@
                 <h2 id="sheet-title">${esc(p.title)}</h2>
                 ${orgLine(p) ? `<p class="sheet-org">${esc(orgLine(p))}</p>` : ''}
                 <p class="sheet-summary">${esc(p.summary)}</p>
-                ${p.links && p.links.length ? `<div class="sheet-links">${p.links.map((l, n) => `<a class="button" href="${esc(l.href)}"${/^https?:/.test(l.href) ? ' target="_blank" rel="noopener"' : ''}>${esc(l.label)}</a>`).join('')}</div>` : ''}
+                ${links.length ? `<div class="sheet-links">${links.map((l) => `<a class="button" href="${esc(l.href)}"${/^https?:/.test(l.href) ? ' target="_blank" rel="noopener"' : ''}>${esc(l.label)}</a>`).join('')}</div>` : ''}
+                ${primaryVideo ? `<div class="sheet-media">${renderBlock(primaryVideo)}</div>` : ''}
                 ${showCover ? `<figure class="sheet-cover"><img src="${esc(p.cover.src)}" alt="${esc(p.cover.alt || '')}">${p.cover.caption ? `<figcaption>${esc(p.cover.caption)}</figcaption>` : ''}</figure>` : ''}
                 ${specsList([...(p.specs || []), ...(p.tools && p.tools.length ? [['Tools', p.tools.join(', ')]] : [])])}
-                ${p.body && p.body.length ? `<div class="blocks">${p.body.map(renderBlock).join('')}</div>` : ''}
+                ${bodyBlocks.length ? `<div class="blocks">${bodyBlocks.map(renderBlock).join('')}</div>` : ''}
                 <nav class="sheet-nav" aria-label="More projects">
                     <button type="button" data-open="${esc(prev.id)}"><small>Previous</small>${esc(prev.title)}</button>
                     <button type="button" data-open="${esc(next.id)}"><small>Next</small>${esc(next.title)}</button>

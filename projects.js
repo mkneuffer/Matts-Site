@@ -44,11 +44,11 @@ const PROJECTS = [
         featured: true,
         cover: { src: 'images/web/mattseye.png', alt: 'MattsEye title card with compass markings and a circular shared-space dial' },
         summary: 'A recreation of Anduril’s EagleEye demo that connects iPhones and headsets in one shared spatial environment. Aligned point clouds, people and object detection, and a tabletop map bring multiple devices’ views together.',
-        tools: ['Unity', 'Web server', 'iPhone', 'Meta Quest 3', 'LiDAR / depth sensing', 'Binocular cameras', 'GPS / compass'],
+        tools: ['Unity', 'Web server', 'iPhone', 'Meta Quest 3', 'LiDAR / depth sensing', 'Monocular cameras', 'GPS / compass'],
         specs: [
             ['Devices', 'Multiple iPhones and Meta Quest 3 headsets'],
             ['Architecture', 'Cloud web server, iPhone app, Unity app on Quest 3'],
-            ['Spatial capture', 'Depth sensors and LiDAR, with support for binocular cameras'],
+            ['Spatial capture', 'Depth sensors and LiDAR, with support for monocular cameras'],
             ['Coordination', 'Central server, point-cloud alignment, device localization'],
             ['Map anchoring', 'GPS and compass data from phone scans'],
             ['Reference', 'Anduril’s EagleEye demonstration']
@@ -59,7 +59,7 @@ const PROJECTS = [
             { type: 'heading', text: 'Device apps and cloud coordination' },
             { type: 'text', text: 'The cloud side runs on a web server. An iPhone app handles the phone side, while a Unity app runs on Meta Quest 3. Both connect to the central environment so phone and headset scans contribute to the same spatial view.' },
             { type: 'heading', text: 'From device scans to a shared environment' },
-            { type: 'text', text: 'Devices capture point clouds using depth sensors and LiDAR; the system also supports binocular cameras. Those scans are sent to a central server, aligned with one another, and used to localize each device within the shared environment.' },
+            { type: 'text', text: 'Devices capture point clouds using depth sensors and LiDAR; the system also supports monocular cameras. Those scans are sent to a central server, aligned with one another, and used to localize each device within the shared environment.' },
             { type: 'heading', text: 'Shared awareness and map views' },
             {
                 type: 'list', items: [

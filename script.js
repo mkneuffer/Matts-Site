@@ -178,7 +178,7 @@
                 ${orgLine(p) ? `<p class="sheet-org">${esc(orgLine(p))}</p>` : ''}
                 <p class="sheet-summary">${esc(p.summary)}</p>
                 ${p.links && p.links.length ? `<div class="sheet-links">${p.links.map((l, n) => `<a class="button" href="${esc(l.href)}"${/^https?:/.test(l.href) ? ' target="_blank" rel="noopener"' : ''}>${esc(l.label)}</a>`).join('')}</div>` : ''}
-                ${showCover ? `<div class="sheet-cover"><img src="${esc(p.cover.src)}" alt="${esc(p.cover.alt || '')}"></div>` : ''}
+                ${showCover ? `<figure class="sheet-cover"><img src="${esc(p.cover.src)}" alt="${esc(p.cover.alt || '')}">${p.cover.caption ? `<figcaption>${esc(p.cover.caption)}</figcaption>` : ''}</figure>` : ''}
                 ${specsList([...(p.specs || []), ...(p.tools && p.tools.length ? [['Tools', p.tools.join(', ')]] : [])])}
                 ${p.body && p.body.length ? `<div class="blocks">${p.body.map(renderBlock).join('')}</div>` : ''}
                 <nav class="sheet-nav" aria-label="More projects">

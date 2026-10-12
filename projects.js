@@ -11,7 +11,7 @@
  *   org       who it was for or where it was built (optional)
  *   year      e.g. '2025' or '2024–25' (optional)
  *   featured  true to show it in the "Selected work" grid; four fit best (optional)
- *   cover     { src, fit: 'cover' | 'contain', alt } — omit for a text-only card
+ *   cover     { src, fit: 'cover' | 'contain', alt, caption } — omit for a text-only card
  *   coverText ['Unity', 'OpenXR', ...]  — lines set as a typographic cover when there is no image
  *   tools     ['Unity', 'OpenXR', ...]
  *   specs     [['Engine', 'Unreal Engine 5'], ...]  — key/value table on the page
@@ -38,8 +38,45 @@ const CATEGORIES = {
 const PROJECTS = [
     // ───────────────────────────── VR & MR
     {
+        id: 'mattseye',
+        title: 'MattsEye',
+        category: 'xr',
+        featured: true,
+        cover: { src: 'images/web/mattseye.png', alt: 'MattsEye title card with compass markings and a circular shared-space dial' },
+        summary: 'A recreation of Anduril’s EagleEye demo that connects iPhones and headsets in one shared spatial environment. Aligned point clouds, people and object detection, and a tabletop map bring multiple devices’ views together.',
+        tools: ['Unity', 'Web server', 'iPhone', 'Meta Quest 3', 'LiDAR / depth sensing', 'Binocular cameras', 'GPS / compass'],
+        specs: [
+            ['Devices', 'Multiple iPhones and Meta Quest 3 headsets'],
+            ['Architecture', 'Cloud web server, iPhone app, Unity app on Quest 3'],
+            ['Spatial capture', 'Depth sensors and LiDAR, with support for binocular cameras'],
+            ['Coordination', 'Central server, point-cloud alignment, device localization'],
+            ['Map anchoring', 'GPS and compass data from phone scans'],
+            ['Reference', 'Anduril’s EagleEye demonstration']
+        ],
+        links: [{ label: 'Watch the demo', href: 'https://youtu.be/hP5raTcAusw' }],
+        body: [
+            { type: 'text', text: 'I recreated the features shown in Anduril’s EagleEye demonstration as a system that connects multiple phones and headsets to the same environment. Each device contributes a point cloud, giving the central environment a spatial view assembled from multiple perspectives.' },
+            { type: 'heading', text: 'Device apps and cloud coordination' },
+            { type: 'text', text: 'The cloud side runs on a web server. An iPhone app handles the phone side, while a Unity app runs on Meta Quest 3. Both connect to the central environment so phone and headset scans contribute to the same spatial view.' },
+            { type: 'heading', text: 'From device scans to a shared environment' },
+            { type: 'text', text: 'Devices capture point clouds using depth sensors and LiDAR; the system also supports binocular cameras. Those scans are sent to a central server, aligned with one another, and used to localize each device within the shared environment.' },
+            { type: 'heading', text: 'Shared awareness and map views' },
+            {
+                type: 'list', items: [
+                    'People and object detection add context to the environment. People seen by one connected device appear on the others, including through-wall overlays when another device has line of sight.',
+                    'A central overview shows the environment from above, with tracked devices and detections placed on a map.',
+                    'A tabletop tactical map supports planning and inspection of the scanned environment.',
+                    'Phone GPS and compass data anchor scans to their geographic location and orientation, so the same scans appear in place on the tabletop map.'
+                ]
+            },
+            { type: 'heading', text: 'Shared tools and saved sites' },
+            { type: 'text', text: 'A live web dashboard brings together the scanned environment, device positions, movement trails, and people tracks. Shared markers and measurements let users annotate the same space from the phone, headset, or browser. Maps can be saved as sites and revisited, with new scans extending the existing environment.' },
+            { type: 'video', youtube: 'hP5raTcAusw', title: 'MattsEye multi-device spatial mapping and tabletop demo' }
+        ]
+    },
+    {
         id: 'electrician-training-lab',
-        title: 'Electrician Virtual Training Lab',
+        title: 'ESAMTAC: Electrician Virtual Training Lab',
         category: 'xr',
         featured: true,
         org: 'ProtoGen',
@@ -69,10 +106,236 @@ const PROJECTS = [
         ]
     },
     {
+        id: 'tabletop-solar-labs',
+        title: 'Tabletop Solar Labs',
+        category: 'xr',
+        cover: { src: 'images/web/tabletop-solar-labs.jpg', alt: 'Tabletop Solar Labs as shown in the Vision Pro demo' },
+        summary: 'A cross-platform WebXR learning experiment that puts a solar lab on the tabletop. Place rooftop panels and move the sun to explore how sun path, time of day, and shadows affect solar energy.',
+        tools: ['WebXR', 'Real-time lighting'],
+        specs: [
+            ['Platform', 'WebXR, with desktop support'],
+            ['Devices', 'Meta Quest, Apple Vision Pro, Android XR, desktop'],
+            ['Learning focus', 'Solar fundamentals, sun path, time of day, shadows'],
+            ['Headset modes', 'Passthrough on Quest 3; full VR in the Vision Pro demo']
+        ],
+        links: [{ label: 'Watch the Vision Pro demo', href: 'https://youtu.be/oUKLLPOXRm4' }],
+        body: [
+            { type: 'text', text: 'This experiment explores how tabletop learning can make labs and experiments easier to access. A small rooftop model gives users a hands-on way to explore the fundamentals of solar energy in a browser-based experience.' },
+            { type: 'heading', text: 'Learn by changing the scene' },
+            {
+                type: 'list', items: [
+                    'Place solar panels on a rooftop model and inspect the layout from different perspectives.',
+                    'Move the sun to explore its path and how its position changes over the day.',
+                    'Use real-time lighting and shadows to see how the sun and surrounding geometry affect the panels.'
+                ]
+            },
+            { type: 'heading', text: 'One lab across devices' },
+            { type: 'text', text: 'The project is built with WebXR and supports Meta Quest, Apple Vision Pro, Android XR, and desktop. On Quest 3, passthrough places the lab in the user’s surroundings. The linked recording shows the Vision Pro version running in full VR.' },
+            { type: 'video', youtube: 'oUKLLPOXRm4', title: 'Tabletop Solar Labs rooftop solar experiment on Apple Vision Pro' }
+        ]
+    },
+    {
+        id: 'custom-sharp-ui',
+        title: 'Custom Sharp UI',
+        category: 'xr',
+        cover: { src: 'images/web/custom-sharp-ui.jpg', alt: 'Custom Sharp UI comparison from the WebXR demo on Quest 3' },
+        summary: 'A custom WebXR rendering approach that puts UI on a separate layer for crisp text, charts, and controls. It brings ideas used in Unity and Unreal to browser-based XR, demonstrated on Meta Quest 3.',
+        tools: ['WebXR', 'Separate-layer UI rendering'],
+        specs: [
+            ['Platform', 'WebXR'],
+            ['Approach', 'UI rendered on a separate layer'],
+            ['Demo hardware', 'Meta Quest 3'],
+            ['Focus', 'Interface sharpness and readability across viewing distances']
+        ],
+        links: [{ label: 'Watch the UI comparison', href: 'https://youtu.be/-yOJiWCGVF4' }],
+        body: [
+            { type: 'text', text: 'I adapted the separate-layer UI rendering approach used in Unity and Unreal for WebXR. Rendering the interface on its own layer makes text, charts, and controls much clearer in the headset.' },
+            { type: 'heading', text: 'Readable interfaces in the headset' },
+            { type: 'text', text: 'The goal was to make detailed interfaces comfortable to read as users change their viewing distance. The Quest 3 demo compares the base UI with the custom rendering approach using the same energy dashboard, including small labels, charts, and controls.' },
+            { type: 'video', youtube: '-yOJiWCGVF4', title: 'Base UI versus Custom Sharp UI in WebXR on Meta Quest 3' }
+        ]
+    },
+    {
+        id: 'microgrid-planner',
+        title: 'Microgrid Planner',
+        category: 'xr',
+        featured: true,
+        cover: { src: 'images/web/microgrid-planner.jpg', alt: 'Microgrid Planner tabletop map and energy simulation from the demo' },
+        summary: 'A tabletop WebXR planner for building and simulating microgrids on real maps with buildings, terrain, and elevation. Combine solar, wind, batteries, and generators, then explore generation and demand across time and weather conditions.',
+        tools: ['WebXR', '3D maps', 'Terrain / elevation', 'Energy simulation'],
+        specs: [
+            ['Platform', 'WebXR'],
+            ['Map', 'Real locations, buildings, terrain, and elevation'],
+            ['Energy assets', 'Solar, wind, batteries, generators'],
+            ['Connections', 'Automatic wiring and power lines'],
+            ['Simulation', 'Power generation, power draw, time of day, time of year, weather']
+        ],
+        links: [{ label: 'Watch the planner demo', href: 'https://youtu.be/c0HH90NfCmI' }],
+        body: [
+            { type: 'text', text: 'Microgrid Planner brings site planning and energy simulation into one 3D tabletop experience. Users can search for a real location, inspect its buildings and terrain, and build a potential microgrid directly on the map.' },
+            { type: 'heading', text: 'Build around a real site' },
+            {
+                type: 'list', items: [
+                    'Search locations and explore real maps with buildings, elevation, and terrain.',
+                    'Combine wind, solar, batteries, and generators into a system suited to the site.',
+                    'Integrate the microgrid with real-world buildings on the map.',
+                    'Use automatic connections to create the wiring and power lines between components.'
+                ]
+            },
+            { type: 'heading', text: 'Explore how the system behaves' },
+            { type: 'text', text: 'The planner simulates power generation and power draw and presents the resulting energy statistics. Users can change the time of day, time of year, and weather to explore how the same design performs under different conditions. The demo also shows energy charts and outage testing alongside the map.' },
+            { type: 'video', youtube: 'c0HH90NfCmI', title: 'Microgrid Planner tabletop WebXR design and energy simulation demo' }
+        ]
+    },
+    {
+        id: 'unity-vision-pro-pipeline',
+        title: 'Unity Vision Pro Pipeline',
+        category: 'xr',
+        cover: { src: 'images/web/unity-vision-pro-pipeline.jpg', alt: 'White blueprint concept sketch of a spatial scene connected to a headset', caption: 'Concept illustration' },
+        summary: 'A custom bridge that brings existing Unity projects, including Quest apps, to Apple Vision Pro as native visionOS apps. It connects Unity projects to a visionOS and Xcode build workflow without relying on PolySpatial.',
+        tools: ['Unity', 'visionOS', 'Xcode', 'Custom bridge'],
+        specs: [
+            ['Source', 'Existing Unity projects, including projects built for Quest'],
+            ['Output', 'Native visionOS app for Apple Vision Pro'],
+            ['Build workflow', 'Custom Unity bridge, visionOS, Xcode'],
+            ['Purpose', 'An alternative to the PolySpatial workflow'],
+            ['Validation', 'Existing Unity XR scenes in the visionOS simulator'],
+            ['Demo', 'Coming soon']
+        ],
+        body: [
+            { type: 'text', text: 'I built a custom bridge and pipeline to bring existing Unity projects to Vision Pro as native visionOS apps. The workflow is designed to take projects originally built for another platform, such as Quest, and make them work with visionOS and Xcode.' },
+            { type: 'heading', text: 'Why I built it' },
+            { type: 'text', text: 'The motivation was to make Unity development for Vision Pro more accessible by providing an alternative to the PolySpatial workflow and its Unity Pro license requirement. Reusing an existing Unity project gives developers a starting point for bringing their work to another headset.' },
+            { type: 'heading', text: 'From Unity to a native app' },
+            { type: 'text', text: 'The custom bridge connects the Unity project to a visionOS build workflow in Xcode. The result is a native app for Apple Vision Pro.' },
+            { type: 'heading', text: 'Keep the existing XR experience' },
+            { type: 'text', text: 'The work covers common Unity scene content, including materials, animated objects, particles, text, and interactive panels. It also adapts headset input for hands, gaze and pinch, and supported controllers, with the aim of reusing the project’s existing interactions.' },
+            { type: 'text', text: 'The pipeline is being validated with the Unity VR template and MattsEye tabletop scenes in the visionOS simulator. That work checks how an existing experience carries across, including its interface and interactions.' },
+            { type: 'text', text: 'Demo video coming soon.' }
+        ]
+    },
+    {
+        id: 'warehouse-h',
+        title: 'Buffalo Trace / Warehouse H',
+        category: 'xr',
+        org: 'Independent concept prototype',
+        cover: { src: 'images/web/warehouse-h.jpg', alt: 'White blueprint concept sketch of a barrel warehouse and an unlabeled whiskey bottle', caption: 'Concept illustration' },
+        summary: 'An independent Vision Pro tour concept that combines an interactive 3D bottle collection with a guided journey through whiskey production and warehouse aging. Tabletop and room-scale views turn the collection and process into a spatial experience.',
+        tools: ['Swift', 'SwiftUI', 'RealityKit', 'visionOS'],
+        specs: [
+            ['Platform', 'Native visionOS app for Apple Vision Pro'],
+            ['Experience', '3D collection, guided production tour, warehouse exploration'],
+            ['Presentation', 'Tabletop and room-scale spatial views'],
+            ['Status', 'Independent concept prototype']
+        ],
+        body: [
+            { type: 'text', text: 'Warehouse H is an independent spatial tour concept built around Buffalo Trace’s collection and production story. It explores how a headset can make a brand experience more tangible through objects users can inspect and spaces they can move through.' },
+            { type: 'heading', text: 'Explore the collection and the process' },
+            {
+                type: 'list', items: [
+                    'Browse a 3D bottle collection and inspect the shape and presentation of individual expressions.',
+                    'Follow a guided journey through production and warehouse aging.',
+                    'Explore a room-scale warehouse setting alongside tabletop views of the collection and process.',
+                    'Use spatial views to illustrate warehouse structure and how a barrel’s position relates to its aging environment.'
+                ]
+            },
+            { type: 'text', text: 'The project is a native visionOS prototype using SwiftUI and RealityKit, with a focus on spatial storytelling and object-based exploration.' }
+        ]
+    },
+    {
+        id: 'palm-planner',
+        title: 'Palm Planner',
+        category: 'xr',
+        cover: { src: 'images/web/palm-planner.jpg', alt: 'White blueprint concept sketch of task cards floating over an open palm', caption: 'Concept illustration' },
+        summary: 'A WebXR productivity experiment that puts today’s tasks on your palm. Capture notes, flick tasks away to finish them, and move cards to another day with a gesture, with headset and desktop interaction modes.',
+        tools: ['WebXR', 'three.js', 'Web Speech API'],
+        specs: [
+            ['Platform', 'WebXR with a desktop browser experience'],
+            ['Interface', 'Palm-anchored tasks, day strip, spatial detail panels'],
+            ['Input', 'Hands, controllers, mouse, and voice where supported'],
+            ['Daily workflow', 'Task capture, completion, rescheduling, morning brief, evening close-out']
+        ],
+        body: [
+            { type: 'text', text: 'Palm Planner explores a to-do list that is available with a small gesture instead of a full screen. On supported hand-tracking headsets, turning the palm up brings today’s tasks into view; longer details open in a separate spatial panel.' },
+            { type: 'heading', text: 'Plan with gestures' },
+            {
+                type: 'list', items: [
+                    'Capture spoken or typed notes and review the tasks before saving them.',
+                    'Flick a task away to complete it, or use its completion control.',
+                    'Drag a task to the day strip to reschedule it, with a wrist-based layout in hand-tracking mode.',
+                    'Start the day with a brief and finish with an evening close-out.',
+                    'Review task details and undo recent changes.'
+                ]
+            },
+            { type: 'heading', text: 'Adapt to the available input' },
+            { type: 'text', text: 'The WebXR prototype includes hand, controller, and desktop controls, with a pinned spatial list for runtimes that use gaze and pinch. Voice capture and spoken output depend on browser support; typed input and captions provide alternatives. Tasks are saved locally in the browser.' }
+        ]
+    },
+    {
+        id: 'spatial-kanban',
+        title: 'Spatial Kanban',
+        category: 'xr',
+        cover: { src: 'images/web/spatial-kanban.jpg', alt: 'White blueprint concept sketch of a floating task board above a desk', caption: 'Concept illustration' },
+        summary: 'A spatial kanban board for walls, desks, or open space, with cards you can pick up and move between columns. A project-board view and a sticky-note whiteboard share the same tasks, with desktop 3D and accessible 2D modes.',
+        tools: ['WebXR', 'React', 'three.js', 'TypeScript'],
+        specs: [
+            ['Experiences', 'WebXR, desktop 3D, accessible 2D board'],
+            ['Placement', 'Wall, desk, or floating board'],
+            ['Views', 'Project board and sticky-note whiteboard'],
+            ['Data', 'Local browser saving, undo/redo, import/export'],
+            ['Validation', 'Desktop browsers and XR emulation']
+        ],
+        body: [
+            { type: 'text', text: 'Spatial Kanban turns a task board into an object in the room. Users can place it on a wall, angle it over a desk, or leave it floating, then move cards with hands, controllers, or a mouse.' },
+            { type: 'heading', text: 'Make task management tactile' },
+            {
+                type: 'list', items: [
+                    'Pick up cards and move them between columns, or pull a blank card from the pad to create a task.',
+                    'Pull cards off the board, park them nearby, and return them to a column.',
+                    'Archive a card by dropping it in the bin or throwing it downward.',
+                    'Switch between a clean project-board layout and a whiteboard with paper-like sticky notes.',
+                    'Move and resize the board, with remembered placement on compatible XR runtimes.'
+                ]
+            },
+            { type: 'heading', text: 'Keep the board usable across devices' },
+            { type: 'text', text: 'The same tasks are available in a desktop 3D view and a 2D board with keyboard and screen-reader support. Board data is saved locally, with undo/redo and import/export. The current build has been checked in desktop browsers and XR emulation; physical-headset validation is still in progress.' }
+        ]
+    },
+    {
+        id: 'page-studio-xr',
+        title: 'Page Studio XR',
+        category: 'xr',
+        featured: true,
+        cover: { src: 'images/web/page-studio-xr.jpg', alt: 'White blueprint concept sketch of a spatial page canvas and device previews', caption: 'Concept illustration' },
+        summary: 'A spatial website builder where pages, components, and device previews become objects in the room. Assemble a site with gestures and voice, check phone and desktop layouts, and export HTML and CSS.',
+        tools: ['WebXR', 'three.js', 'Unity', 'HTML / CSS'],
+        specs: [
+            ['Experiences', 'WebXR studio, desktop editor, companion Unity build for Quest'],
+            ['Workflow', 'Build, edit, review, preview, export'],
+            ['Previews', 'Phone, tablet, and desktop layouts at real size'],
+            ['Output', 'HTML/CSS export, link and QR previews']
+        ],
+        body: [
+            { type: 'text', text: 'Page Studio XR explores web design as a spatial workspace. The page sits ahead of the user, the site map organizes navigation to one side, and a device wall shows how the same site looks at phone, tablet, and desktop sizes.' },
+            { type: 'heading', text: 'Build and edit in the room' },
+            {
+                type: 'list', items: [
+                    'Start with a brief or a template, then grab components and place them into the page.',
+                    'Select and rearrange blocks, edit content and styling, and connect pages through the spatial site map.',
+                    'Bring the brand palette to the hand to apply colors and typography.',
+                    'Import photos and videos into a media wall, then drag them into the page.',
+                    'Compare layout variants and inspect the page as separated depth layers.'
+                ]
+            },
+            { type: 'heading', text: 'Check the result before sharing' },
+            { type: 'text', text: 'Real-size device previews let users check the site at different screen sizes. A reviewer flags issues such as contrast, missing image descriptions, heading order, and phone overflow. The studio supports version comparison and restore, HTML/CSS export, and link or QR previews when connected to its companion server.' },
+            { type: 'text', text: 'The WebXR and Unity builds share saved project files. A desktop editor supports detailed text and property edits alongside the headset experience.' }
+        ]
+    },
+    {
         id: 'impact-of-ai',
         title: 'Impact of AI in VR',
         category: 'xr',
-        featured: true,
         org: 'The Global Lab at WPI',
         year: '2024–25',
         coverText: ['Unity', 'OpenXR', 'Meta Quest 3'],
@@ -105,7 +368,6 @@ const PROJECTS = [
         id: 'vr-framework-webxr-pipeline',
         title: 'VR framework and WebXR packaging pipeline',
         category: 'xr',
-        featured: true,
         year: '2025–26',
         coverText: ['WebXR', 'Meta Quest 3', 'Max refresh rate'],
         summary: 'Development pipelines and framework extensions for VR and learning content, including a WebXR packaging step that runs at the highest refresh rate Meta Quest 3 supports.',
@@ -130,7 +392,6 @@ const PROJECTS = [
         id: 'spi-glass',
         title: 'SPI-Glass',
         category: 'ar',
-        featured: true,
         summary: 'A multiplayer AR game that combines spatial computing with interactive storytelling.',
         cover: { src: 'images/web/spiglass.jpg', fit: 'contain', alt: 'SPI-Glass logo: a magnifying glass over a ghost and compass' },
         tools: ['Unity', 'Niantic Lightship ARDK'],
@@ -460,8 +721,5 @@ const PROJECTS = [
 
 // Recent work without a page yet. Shown as a short list under the project index.
 const ASK_ABOUT = [
-    'MR golf simulator',
-    'Anduril EagleEye clone',
-    'MR microgrid planner',
-    'Buffalo Trace / Warehouse H tour demo'
+    'MR golf simulator'
 ];

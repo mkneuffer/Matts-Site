@@ -139,7 +139,7 @@ const PROJECTS = [
         title: 'Custom Sharp UI',
         category: 'xr',
         cover: { src: 'images/web/custom-sharp-ui.jpg', alt: 'Custom Sharp UI comparison from the WebXR demo on Quest 3' },
-        summary: 'A custom WebXR rendering approach that puts UI on a separate layer for crisp text, charts, and controls. It brings ideas used in Unity and Unreal to browser-based XR, demonstrated on Meta Quest 3.',
+        summary: 'A custom WebXR rendering approach that puts UI on a separate layer for crisp text, charts, and controls. It brings ideas used in Unity and Unreal to browser-based XR, demonstrated on Meta Quest 3. The video doesn’t do the improvement justice; the difference in clarity is much more noticeable in the headset.',
         tools: ['WebXR', 'Separate-layer UI rendering'],
         specs: [
             ['Platform', 'WebXR'],

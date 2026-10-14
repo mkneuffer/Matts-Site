@@ -219,6 +219,34 @@ const PROJECTS = [
         ]
     },
     {
+        id: 'openflight-mr',
+        title: 'OpenFlight MR Simulator Extension',
+        category: 'xr',
+        org: 'Extension of my open-source OpenFlight launch monitor',
+        year: '2026',
+        cover: { src: 'images/web/openflight-mr.jpg', alt: 'OpenFlight mixed reality golf simulator view from the Quest 3 demo' },
+        summary: 'A WebXR mixed reality extension for my open-source OpenFlight launch monitor. The headset shows your real ball until you hit it, then follows the shot down a virtual range with launch monitor numbers in view. Built on Meta Quest 3, and it should work on other WebXR headsets.',
+        tools: ['WebXR', 'OpenFlight', 'Meta Quest 3', 'Passthrough mixed reality'],
+        specs: [
+            ['Platform', 'WebXR, demonstrated on Meta Quest 3'],
+            ['Base project', 'OpenFlight, an open-source launch monitor and simulator'],
+            ['Connection', 'OpenFlight sends shot data to the headset'],
+            ['Mixed reality', 'Passthrough on the ground and behind the player, virtual view down range'],
+            ['Display', 'Launch monitor stats shown in the headset']
+        ],
+        links: [{ label: 'Watch the demo', href: 'https://www.youtube.com/watch?v=vGj60p2h4wQ' }],
+        body: [
+            { type: 'text', text: 'OpenFlight is the open-source launch monitor and simulator I built. This extension connects it to a Meta Quest 3 and adds a mixed reality view of your shot, which makes hitting into a net much more engaging.' },
+            { type: 'heading', text: 'Real ball, virtual range' },
+            { type: 'text', text: 'Passthrough shows the real world on the ground and behind you, so you can see the actual golf ball until you hit it. Down range, the view becomes virtual, and you watch the ball flight play out in front of you.' },
+            { type: 'heading', text: 'Numbers in the headset' },
+            { type: 'text', text: 'The launch monitor stats appear in the headset view, so you don’t need to look away at a screen after each shot.' },
+            { type: 'heading', text: 'How it connects' },
+            { type: 'text', text: 'I extended OpenFlight to send shot data to the Quest 3. The experience is built with WebXR, so it can also work on other WebXR-capable headsets.' },
+            { type: 'video', youtube: 'vGj60p2h4wQ', title: 'OpenFlight and OpenGolfSim in VR' }
+        ]
+    },
+    {
         id: 'warehouse-h',
         title: 'Buffalo Trace / Warehouse H',
         category: 'xr',
@@ -232,6 +260,7 @@ const PROJECTS = [
             ['Presentation', 'Tabletop and room-scale spatial views'],
             ['Status', 'Independent concept prototype']
         ],
+        links: [{ label: 'Watch the demo', href: 'https://youtu.be/UgfZoLUZxi4' }],
         body: [
             { type: 'text', text: 'Warehouse H is an independent spatial tour concept built around Buffalo Trace’s collection and production story. It explores how a headset can make a brand experience more tangible through objects users can inspect and spaces they can move through.' },
             { type: 'heading', text: 'Explore the collection and the process' },
@@ -243,7 +272,8 @@ const PROJECTS = [
                     'Use spatial views to illustrate warehouse structure and how a barrel’s position relates to its aging environment.'
                 ]
             },
-            { type: 'text', text: 'The project is a native visionOS prototype using SwiftUI and RealityKit, with a focus on spatial storytelling and object-based exploration.' }
+            { type: 'text', text: 'The project is a native visionOS prototype using SwiftUI and RealityKit, with a focus on spatial storytelling and object-based exploration.' },
+            { type: 'video', youtube: 'UgfZoLUZxi4', title: 'Buffalo Trace / Warehouse H Vision Pro tour concept demo' }
         ]
     },
     {

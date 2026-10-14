@@ -26,6 +26,12 @@
       "video": "https://youtu.be/c0HH90NfCmI"
     },
     {
+      "project": "openflight-mr",
+      "file": "images/web/openflight-mr.jpg",
+      "source": "https://i.ytimg.com/vi/vGj60p2h4wQ/maxresdefault.jpg",
+      "video": "https://www.youtube.com/watch?v=vGj60p2h4wQ"
+    },
+    {
       "project": "unity-vision-pro-pipeline",
       "file": "images/web/unity-vision-pro-pipeline.jpg",
       "source": "Built-in image_gen tool",

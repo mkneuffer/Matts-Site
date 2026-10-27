@@ -54,7 +54,7 @@ const PROJECTS = [
             ['Reference', 'Anduril’s EagleEye demonstration']
         ],
         links: [
-            { label: 'Watch the demo', href: 'https://youtu.be/hP5raTcAusw' },
+            { label: 'Watch the demo', href: 'https://youtu.be/ekdhi5mOKr4' },
             { label: 'Inspiration: Anduril’s EagleEye', href: 'https://www.youtube.com/watch?v=x9B02pFKpJo' }
         ],
         body: [
